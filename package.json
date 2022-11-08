@@ -14,6 +14,7 @@
     "@angular/router": "~14.2.0",
     "@nativescript/angular": "~14.2.0",
     "@nativescript/core": "~8.3.0",
+    "@nativescript/schematics": "^11.2.0",
     "@nativescript/theme": "~3.0.2",
     "rxjs": "~7.5.0",
     "zone.js": "~0.11.5"
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "~14.2.0",
     "@angular/compiler-cli": "~14.2.0",
+    "@nativescript/ios": "8.3.3",
     "@nativescript/types": "~8.3.0",
     "@nativescript/webpack": "~5.0.9",
     "@ngtools/webpack": "~14.2.0",

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "schematics": "@nativescript/schematics",
+  "projects": {
+    "my-project-name": {
+      "root": "",
+      "sourceRoot": "src/",
+       "projectType": "application",
+       "prefix": "app"
+    }
+  },
+  "defaultProject": "weekl"
+}
