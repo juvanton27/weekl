@@ -1,11 +1,24 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View, ScrollView, Dimensions } from 'react-native';
+import Conversations from './pages/Conversations';
+import Feed from './pages/Feed';
+import Profil from './pages/Profil';
+
+const { width, height } = Dimensions.get('window');
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <ScrollView
+        contentOffset={{ x: width * 2 }}
+        snapToInterval={width}
+        decelerationRate='fast'
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
+        <Conversations />
+        <Profil />
+        <Feed />
+      </ScrollView>
     </View>
   );
 }
@@ -13,7 +26,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -12,3 +12,7 @@ web-build/
 
 # macOS
 .DS_Store
+
+assets/posters/
+assets/videos/
+assets/pictures/
