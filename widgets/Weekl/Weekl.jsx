@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dimensions, TouchableOpacity, View } from "react-native";
+import { Dimensions, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import { BehaviorSubject } from "rxjs";
 import { getActiveStoriesByUser } from "../../services/stories.service";
 
@@ -25,7 +25,7 @@ const Weekl = (props) => {
 
   return (
     <View>
-      <TouchableOpacity onPress={(e) => {
+      <TouchableHighlight onLongPress={() => {}} onPress={(e) => {
         if (e.nativeEvent.locationX >= 75) {
           if (index.getValue() < stories.length - 1)
             currentIndex.increment();
@@ -34,8 +34,8 @@ const Weekl = (props) => {
             currentIndex.decrement();
         }
       }}>
-        <Day user={props.user_id} title={currentStory?.id} />
-      </TouchableOpacity>
+        <Day user={props.user_id} video={currentStory} visible={props.visible}/>
+      </TouchableHighlight>
       <Info />
     </View>
   )

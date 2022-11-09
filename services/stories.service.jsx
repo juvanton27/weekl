@@ -10,7 +10,7 @@ const stories = [
             {
                 id: 1,
                 date: new Date(new Date().getTime()-86400000*2),
-                video: require('../assets/videos/01.mp4')
+                video: require('../assets/videos/02.mp4')
             },
             {
                 id: 2,
