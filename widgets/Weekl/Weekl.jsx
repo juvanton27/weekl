@@ -12,7 +12,14 @@ const index = new BehaviorSubject(0);
 const currentIndex = {
   increment: () => index.next(index.getValue() + 1),
   decrement: () => index.next(index.getValue() - 1),
+  set: (v) => index.next(v),
   onIndex: () => index.asObservable(),
+}
+
+const isSameDay = (date1, date2) => {
+  return date1?.getFullYear() === date2?.getFullYear() &&
+    date1?.getMonth() === date2?.getMonth() &&
+    date1?.getDate() === date2?.getDate();
 }
 
 const Weekl = (props) => {
@@ -21,7 +28,12 @@ const Weekl = (props) => {
 
   useEffect(() => {
     currentIndex.onIndex().subscribe(i => setCurrentStory(stories[i]));
-  }, [])
+  }, []);
+
+  const handleDayClick = (d) => {
+    const story = stories.find(s=>isSameDay(d.date, s.date));
+    if(story) currentIndex.set(story.id);
+  }
 
   return (
     <View>
@@ -36,7 +48,7 @@ const Weekl = (props) => {
       }}>
         <Day user={props.user_id} video={currentStory} visible={props.visible}/>
       </TouchableHighlight>
-      <Info />
+      <Info video={currentStory} user={props.user_id} visible={props.visible} handleDayClick={handleDayClick} />
     </View>
   )
 }

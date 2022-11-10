@@ -18,6 +18,7 @@ export default function App() {
         <Conversations />
         <Profil />
         <Feed />
+        <Profil />
       </ScrollView>
     </View>
   );

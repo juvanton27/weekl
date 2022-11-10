@@ -1,8 +1,15 @@
-import { useRef } from "react";
+import { createContext, useContext, useRef } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { Video } from 'expo-av';
+import { BehaviorSubject } from "rxjs";
 
 const { width, height } = Dimensions.get('window');
+
+export const progress = new BehaviorSubject(0);
+export const currentProgress = {
+  set: (p) => progress.next(p),
+  onProgress: () => progress.asObservable(),
+}
 
 const Day = (props) => {
   const ref = useRef();
@@ -20,6 +27,7 @@ const Day = (props) => {
       isLooping
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}
+      onPlaybackStatusUpdate={(e) => currentProgress.set(e.positionMillis/e.durationMillis)}
     />
   )
 }
