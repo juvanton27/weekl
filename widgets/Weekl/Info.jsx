@@ -1,13 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { getActiveStoriesByUser } from "../../services/stories.service";
 import { getUserById } from "../../services/users.service";
-import { currentProgress } from "../Day";
-import Weekl from "./Weekl";
+import { capFirstLetter, isSameDay } from "../../utils/utils";
+import { currentProgress } from "./Day";
 
 const { width, height } = Dimensions.get('window');
 
+// Sets the label of the days on a Weekl
 const today = new Date();
 const days = [
   { date: new Date(today.getTime() - (86400000 * 6)) },
@@ -19,22 +19,31 @@ const days = [
   { date: new Date(today.getTime()) },
 ]
 
-const isSameDay = (date1, date2) => {
-  return date1?.getFullYear() === date2?.getFullYear() &&
-    date1?.getMonth() === date2?.getMonth() &&
-    date1?.getDate() === date2?.getDate();
-}
-
-const capFirstLetter = (string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);;
+/**
+ * Handle the width of the progress bar
+ * @param {*} progress the progress from 0 to 1
+ * @param {*} storyToCompare the progressbar of a given story
+ * @param {*} props the props of main component {visible, video}
+ * @param {*} length the length of the stories in the current weekl
+ * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
+ */
+const handleProgressBar = (progress, storyToCompare, props, length) => {
+  if (!isNaN(progress) && props.visible && props.video?.date.getTime() >= storyToCompare.date.getTime()) {
+    if (props.video?.id === storyToCompare.id)
+      return progress * width / (length * 1.5)
+    if (props.video?.date.getTime() > storyToCompare.date.getTime())
+      return width / (length * 1.5)
+  }
+  return 0;
 }
 
 const Info = (props) => {
   const user = getUserById(props.user);
-  const [p, setP] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const length = props.stories.filter(s => isSameDay(s.date, props.video?.date)).length;
 
   useEffect(() => {
-    currentProgress.onProgress().subscribe(pro => setP(pro));
+    currentProgress.onProgress().subscribe(progress => setProgress(progress));
   }, [])
 
   return (
@@ -49,19 +58,24 @@ const Info = (props) => {
       />
       <View style={styles.infos}>
         <Text style={styles.username}>@{user?.username}</Text>
-        <View style={styles.bar}>
-          <View style={{ ...styles.progress, width: !isNaN(p) && props.visible ? p * width / 1.5 : 0, height: 1 }}></View>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {props.stories.filter(s => isSameDay(s.date, props.video?.date)).map((s, i) =>
+            <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
+              <View style={{ ...styles.progress, width: handleProgressBar(progress, s, props, length) }}></View>
+            </View>
+          )}
         </View>
         <ScrollView
           style={styles.days}
           horizontal
+          showsHorizontalScrollIndicator={false}
         >
           {
             days.map((d, index) => (
               <View
                 key={index}
                 style={{ ...styles.bubble, backgroundColor: isSameDay(props.video?.date, d.date) ? 'white' : 'rgba(255,255,255,0.5)' }}
-                onTouchEnd={() => {props.handleDayClick(d)}}
+                onTouchEnd={() => { props.handleDayClick(d) }}
               >
                 <Text>{isSameDay(props.video?.date, d.date) ?
                   capFirstLetter(d.date.toLocaleDateString('fr-FR', { weekday: 'long' })) :
@@ -106,14 +120,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   bar: {
-    width: width / 1.5,
+    height: 1,
     backgroundColor: 'rgba(255,255,255,0.5)',
     borderRadius: 45,
     margin: 5,
   },
   progress: {
     backgroundColor: 'white',
-    borderRadius: 45
+    borderRadius: 45,
+    height: 1,
   },
   days: {
     flexWrap: 'nowrap',
