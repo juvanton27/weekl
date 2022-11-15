@@ -6,7 +6,7 @@ import { getActiveStoriesByUser } from "../../services/stories.service";
 import { isSameDay } from "../../utils/utils";
 
 import Day from "./Day";
-import Info from "./Info";
+import WeeklInfo from "./Info";
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,7 +58,7 @@ const Weekl = (props) => {
       <TouchableHighlight onLongPress={() => { }} onPress={handleWeeklClick}>
         <Day user={props.user_id} video={currentStory} visible={isVisible()} />
       </TouchableHighlight>
-      <Info video={currentStory} user={props.user_id} visible={isVisible()} handleDayClick={handleDayClick} stories={stories} />
+      <WeeklInfo video={currentStory} user={props.user_id} visible={isVisible()} handleDayClick={handleDayClick} stories={stories} />
     </View>
   )
 }

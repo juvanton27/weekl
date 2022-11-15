@@ -37,7 +37,7 @@ const handleProgressBar = (progress, storyToCompare, props, length) => {
   return 0;
 }
 
-const Info = (props) => {
+const WeeklInfo = (props) => {
   const user = getUserById(props.user);
   const [progress, setProgress] = useState(0);
   const length = props.stories.filter(s => isSameDay(s.date, props.video?.date)).length;
@@ -152,4 +152,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Info;
+export default WeeklInfo;

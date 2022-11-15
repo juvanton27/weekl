@@ -10,7 +10,7 @@ const { width, height } = Dimensions.get('window');
 
 
 export const weeklIndex = new BehaviorSubject(0);
-const currentWeeklIndex = {
+export const currentWeeklIndex = {
   increment: () => weeklIndex.next(weeklIndex.getValue() + 1),
   decrement: () => weeklIndex.next(weeklIndex.getValue() - 1),
   set: (v) => weeklIndex.next(v),

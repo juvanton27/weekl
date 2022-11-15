@@ -2,6 +2,7 @@ import { Video } from 'expo-av';
 import { useRef } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import { BehaviorSubject } from "rxjs";
+import { pageIndex } from '../../App';
 import { currentIndex } from "./Weekl";
 
 const { width, height } = Dimensions.get('window');
@@ -32,7 +33,7 @@ const Day = (props) => {
       isMuted={false}
       source={props.video?.video}
       resizeMode='cover'
-      shouldPlay={props.visible}
+      shouldPlay={props.visible && pageIndex.getValue()===2}
       positionMillis={0}
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}
