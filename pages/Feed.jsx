@@ -1,18 +1,41 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
+import End from "../widgets/Weekl/FeedEnd";
+import { BehaviorSubject } from "rxjs";
 
 import Weekl, { currentIndex } from "../widgets/Weekl/Weekl";
 
 const { width, height } = Dimensions.get('window');
 
 
+export const weeklIndex = new BehaviorSubject(0);
+const currentWeeklIndex = {
+  increment: () => weeklIndex.next(weeklIndex.getValue() + 1),
+  decrement: () => weeklIndex.next(weeklIndex.getValue() - 1),
+  set: (v) => weeklIndex.next(v),
+  onWeeklIndex: () => weeklIndex.asObservable(),
+}
+
 const Feed = (props) => {
-  const [currentWeekl, setCurrentWeekl] = useState(0);
+  const [weeklIndexState, setWeeklIndexState] = useState(0);
   let _feedview = useRef();
 
   const scrollToNextWeekl = () => {
     _feedview.current.scrollTo({ y: height });
   }
+
+  const onMomentumScrollEnd = (e) => {
+    if (e.nativeEvent.contentOffset.y / height !== weeklIndexState) {
+      currentIndex.set(0);
+      currentWeeklIndex.set(e.nativeEvent.contentOffset.y / height);
+    }
+  }
+
+  useEffect(() => {
+    currentWeeklIndex.onWeeklIndex().subscribe(i => {
+      setWeeklIndexState(i);
+    });
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -22,12 +45,12 @@ const Feed = (props) => {
         snapToInterval={height}
         decelerationRate='fast'
         showsVerticalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {setCurrentWeekl(e.nativeEvent.contentOffset.y / height); currentIndex.set(0)}}
+        onMomentumScrollEnd={onMomentumScrollEnd}
       >
         {[0, 1].map((id, index) => (
-          <Weekl key={id} user_id={id} visible={currentWeekl === index} scrollToNextWeekl={scrollToNextWeekl} />
+          <Weekl key={id} user_id={id} index={index} scrollToNextWeekl={scrollToNextWeekl} />
         ))}
-        {/* Add special page saying all is seen and should subscribe to more people */}
+        <End />
       </ScrollView>
     </View>
   )

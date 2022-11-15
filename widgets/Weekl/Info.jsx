@@ -44,7 +44,7 @@ const Info = (props) => {
 
   useEffect(() => {
     currentProgress.onProgress().subscribe(progress => setProgress(progress));
-  }, [])
+  }, []);
 
   return (
     <LinearGradient

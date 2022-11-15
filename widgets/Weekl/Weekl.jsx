@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Dimensions, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { Dimensions, TouchableHighlight, View } from "react-native";
 import { BehaviorSubject } from "rxjs";
+import { weeklIndex } from "../../pages/Feed";
 import { getActiveStoriesByUser } from "../../services/stories.service";
 import { isSameDay } from "../../utils/utils";
 
@@ -19,31 +20,46 @@ export const currentIndex = {
 
 const Weekl = (props) => {
   const stories = getActiveStoriesByUser(props.user_id);
-  const [currentStory, setCurrentStory] = useState(stories[0])
+  const [currentStory, setCurrentStory] = useState(stories[0]);
 
   const handleDayClick = (d) => {
     const story = stories.find(s => isSameDay(d.date, s.date));
     if (story) currentIndex.set(stories.indexOf(story));
   }
 
+  const handleWeeklClick = (e) => {
+    if (e.nativeEvent.locationX >= 75) {
+      if (index.getValue() < stories.length)
+        currentIndex.increment();
+    } else {
+      if (index.getValue() > 0)
+        currentIndex.decrement();
+    }
+  }
+
+  const isVisible = () => {
+    return weeklIndex.getValue() === props.index;
+  }
+
   useEffect(() => {
-    currentIndex.onIndex().subscribe(i => i<=stories.length?setCurrentStory(stories[i]):props.scrollToNextWeekl());
+    currentIndex.onIndex().subscribe(i => {
+      if(isVisible()) {
+        if (stories[i]) {
+          setCurrentStory(stories[i]);
+        } else {
+          console.log("je vais scroll to next week");
+          props.scrollToNextWeekl();
+        }
+      }
+    });
   }, []);
 
   return (
     <View>
-      <TouchableHighlight onLongPress={() => { }} onPress={(e) => {
-        if (e.nativeEvent.locationX >= 75) {
-          if (index.getValue() < stories.length - 1)
-            currentIndex.increment();
-        } else {
-          if (index.getValue() > 0)
-            currentIndex.decrement();
-        }
-      }}>
-        <Day user={props.user_id} video={currentStory} visible={props.visible} />
+      <TouchableHighlight onLongPress={() => { }} onPress={handleWeeklClick}>
+        <Day user={props.user_id} video={currentStory} visible={isVisible()} />
       </TouchableHighlight>
-      <Info video={currentStory} user={props.user_id} visible={props.visible} handleDayClick={handleDayClick} stories={stories} />
+      <Info video={currentStory} user={props.user_id} visible={isVisible()} handleDayClick={handleDayClick} stories={stories} />
     </View>
   )
 }

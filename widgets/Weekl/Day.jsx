@@ -14,6 +14,15 @@ export const currentProgress = {
 
 const Day = (props) => {
   const ref = useRef();
+
+  const onPlaybackStatusUpdate = (e) => {
+    if (e.didJustFinish) {
+      currentIndex.increment()
+    } else {
+      currentProgress.set(e.positionMillis / e.durationMillis)
+    }
+  }
+
   return (
     <Video
       ref={ref}
@@ -27,7 +36,7 @@ const Day = (props) => {
       positionMillis={0}
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}
-      onPlaybackStatusUpdate={(e) => e.didJustFinish?currentIndex.increment():currentProgress.set(e.positionMillis/e.durationMillis)}
+      onPlaybackStatusUpdate={onPlaybackStatusUpdate}
     />
   )
 }
