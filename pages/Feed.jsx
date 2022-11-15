@@ -4,6 +4,7 @@ import End from "../widgets/Weekl/FeedEnd";
 import { BehaviorSubject } from "rxjs";
 
 import Weekl, { currentIndex } from "../widgets/Weekl/Weekl";
+import { currentProgress } from "../widgets/Weekl/Day";
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ const Feed = (props) => {
 
   const onMomentumScrollEnd = (e) => {
     if (e.nativeEvent.contentOffset.y / height !== weeklIndexState) {
+      currentProgress.set(0);
       currentIndex.set(0);
       currentWeeklIndex.set(e.nativeEvent.contentOffset.y / height);
     }

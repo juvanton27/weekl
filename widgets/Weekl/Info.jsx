@@ -58,7 +58,7 @@ const Info = (props) => {
       />
       <View style={styles.infos}>
         <Text style={styles.username}>@{user?.username}</Text>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={styles.barContainer}>
           {props.stories.filter(s => isSameDay(s.date, props.video?.date)).map((s, i) =>
             <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
               <View style={{ ...styles.progress, width: handleProgressBar(progress, s, props, length) }}></View>
@@ -112,12 +112,17 @@ const styles = StyleSheet.create({
   },
   infos: {
     flex: 1,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   username: {
-    margin: 5,
+    // margin: 5,
     color: 'white',
     fontWeight: 'bold'
+  },
+  barContainer: { 
+    flex: 1, 
+    flexDirection: 'row',
+    marginVertical: 5,
   },
   bar: {
     height: 1,
@@ -133,7 +138,8 @@ const styles = StyleSheet.create({
   days: {
     flexWrap: 'nowrap',
     flexDirection: "row",
-    overflow: 'visible'
+    overflow: 'visible',
+    marginVertical: 5,
   },
   bubble: {
     margin: 5,
