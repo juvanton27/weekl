@@ -21,7 +21,7 @@ const Feed = (props) => {
   let _feedview = useRef();
 
   const scrollToNextWeekl = () => {
-    _feedview.current.scrollTo({ y: height });
+    _feedview.current.scrollTo({ y: (weeklIndex.getValue()+1)*height });
   }
 
   const onMomentumScrollEnd = (e) => {
@@ -47,7 +47,7 @@ const Feed = (props) => {
         showsVerticalScrollIndicator={false}
         onMomentumScrollEnd={onMomentumScrollEnd}
       >
-        {[0, 1].map((id, index) => (
+        {[0, 1, 2, 3].map((id, index) => (
           <Weekl key={id} user_id={id} index={index} scrollToNextWeekl={scrollToNextWeekl} />
         ))}
         <End />
@@ -61,10 +61,6 @@ const styles = StyleSheet.create({
     width,
     height,
   },
-  text: {
-    width,
-    height,
-  }
 });
 
 export default Feed;

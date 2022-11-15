@@ -47,7 +47,6 @@ const Weekl = (props) => {
         if (stories[i]) {
           setCurrentStory(stories[i]);
         } else {
-          console.log("je vais scroll to next week");
           props.scrollToNextWeekl();
         }
       }
