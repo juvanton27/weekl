@@ -1,11 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import * as inline_heart from '@fortawesome/free-regular-svg-icons/faHeart';
 import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
 import * as inline_comment from '@fortawesome/free-regular-svg-icons/faComment';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { currentModalVisible } from "./Post";
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,7 +27,9 @@ const PostInfo = (props) => {
       </View>
       <View style={styles.right}>
         <FontAwesomeIcon style={styles.icon} icon={solid_heart.faHeart} color="red" size={30} />
-        <FontAwesomeIcon style={styles.icon} icon={inline_comment.faComment} color="white" size={30} />
+        <Pressable onPress={() => currentModalVisible.set(true)}>
+          <FontAwesomeIcon style={styles.icon} icon={inline_comment.faComment} color="white" size={30} />
+        </Pressable>
       </View>
     </LinearGradient>
   )
