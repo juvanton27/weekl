@@ -1,12 +1,12 @@
+import { library } from '@fortawesome/fontawesome-svg-core';
+import * as inline_comment from '@fortawesome/free-regular-svg-icons/faComment';
+import * as inline_heart from '@fortawesome/free-regular-svg-icons/faHeart';
+import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { library } from '@fortawesome/fontawesome-svg-core';
-import * as inline_heart from '@fortawesome/free-regular-svg-icons/faHeart';
-import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
-import * as inline_comment from '@fortawesome/free-regular-svg-icons/faComment';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { currentModalVisible } from "./Post";
+import { currentModalVisible } from "./Comments";
 
 const { width, height } = Dimensions.get('window');
 
