@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Dimensions, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
+import { BehaviorSubject } from 'rxjs';
 import { getPostsByUser } from '../services/posts.service';
 import stories from '../services/stories.service';
 import { getUserById } from '../services/users.service';
@@ -11,6 +12,7 @@ const { width, height } = Dimensions.get('window');
 
 const Profil = (props) => {
   const [user, setUser] = useState({});
+  const [gridView, setGridView] = useState(false);
 
   useEffect(() => {
     currentWeeklIndex.onWeeklIndex().subscribe(i =>
@@ -44,9 +46,13 @@ const Profil = (props) => {
             </View>
           </View>
         </View>
-        {getPostsByUser(user?.id)?.map(post => (
-          <Post key={post.id} user={user} post={post} />
-        ))}
+        <TouchableOpacity activeOpacity={1} style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }} onPress={() => setGridView(!gridView)}>
+          {getPostsByUser(user?.id)?.map(post => (
+            <View key={post.id} style={{ width: gridView?width / 3:width }}>
+              <Post user={user} post={post} displayInfo={gridView} />
+            </View>
+          ))}
+        </TouchableOpacity>
       </ScrollView>
       <View style={{ ...styles.button, left: 25 }}>
         <Button title='Follow' color="black" />
