@@ -8,26 +8,31 @@ const posts = [
         post: 'https://ericheymans.b-cdn.net/wp-content/uploads/2012/08/dawn-field-grass-164025.jpg',
         comments: [
           {
+            id: 0,
             user_id: 1,
-            comment: 'Wow',
+            comment: 'Wow ❤️',
             date: new Date(new Date().getTime() - 86400000 * 2)
           },
           {
+            id: 1,
             user_id: 1,
-            comment: 'Wow',
+            comment: 'Wow 🔥🔥🔥🔥',
             date: new Date(new Date().getTime() - 86399999 * 2)
           },
           {
+            id: 2,
             user_id: 1,
             comment: 'Insane',
             date: new Date(new Date().getTime() - 86399998 * 2)
           },
           {
+            id: 3,
             user_id: 2,
             comment: 'Incroyaux',
             date: new Date(new Date().getTime() - 86399997 * 2)
           },
           {
+            id: 4,
             user_id: 2,
             comment: 'Mashallaté sans sucre svp',
             date: new Date(new Date().getTime() - 86399996 * 2)
@@ -89,7 +94,8 @@ export function getPostsByUser(id) {
 }
 
 export function getCommentsByPost(id) {
-  console.log(posts.reduce((p, c) => p?.posts?.concat(c.posts), []))
+  if(id===undefined) return undefined;
+  return posts.reduce((p, c) => p.concat(c.posts), []).find(p=>p.id===id).comments??[];
 }
 
 export default posts;

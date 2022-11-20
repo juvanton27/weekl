@@ -53,7 +53,7 @@ const WeeklInfo = (props) => {
     >
       <Image
         style={styles.picture}
-        source={require('../../assets/pictures/01.jpeg')}
+        source={{uri: user?.picture}}
         resizeMode='cover'
       />
       <View style={styles.infos}>

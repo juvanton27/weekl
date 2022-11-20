@@ -4,15 +4,17 @@ import * as inline_heart from '@fortawesome/free-regular-svg-icons/faHeart';
 import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useState } from "react";
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { currentModalVisible } from "./Comments";
+import { currentModalVisible, currentPostComments } from "./Comments";
 
 const { width, height } = Dimensions.get('window');
 
 library.add(inline_comment.faComment, solid_heart.faHeart, inline_heart.faHeart);
 
 const PostInfo = (props) => {
+  const [liked, setLiked] = useState(false);
+
   return (
     <LinearGradient
       style={styles.container}
@@ -26,8 +28,10 @@ const PostInfo = (props) => {
         <Text style={styles.location}>Avenue de QuelquePart</Text>
       </View>
       <View style={styles.right}>
-        <FontAwesomeIcon style={styles.icon} icon={solid_heart.faHeart} color="red" size={30} />
-        <Pressable onPress={() => currentModalVisible.set(true)}>
+        <Pressable onPress={() => setLiked(!liked)}>
+          <FontAwesomeIcon style={styles.icon} icon={liked?solid_heart.faHeart:inline_heart.faHeart} color={liked?'red':'white'} size={30} />
+        </Pressable>
+        <Pressable onPress={() => { currentModalVisible.set(true); currentPostComments.set(props.post) }}>
           <FontAwesomeIcon style={styles.icon} icon={inline_comment.faComment} color="white" size={30} />
         </Pressable>
       </View>

@@ -1,6 +1,5 @@
 import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
-import Comments from "./Comments";
 import PostInfo from "./Info";
 
 const { width, height } = Dimensions.get('window');
@@ -9,9 +8,8 @@ const Post = (props) => {
 
   return (
     <View style={styles.container}>
-      <Image style={styles.post} source={{ uri: props.post }} resizeMode='cover' />
-      <PostInfo user={props.user} />
-      <Comments />
+      <Image style={styles.post} source={{ uri: props.post.post }} resizeMode='cover' />
+      <PostInfo user={props.user} post={props.post} />
     </View>
   )
 }

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Animated, Button, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, Dimensions, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { getPostsByUser } from '../services/posts.service';
 import stories from '../services/stories.service';
 import { getUserById } from '../services/users.service';
-import { currentWeeklIndex } from './Feed';
-import { useRef } from 'react';
-import { getPostsByUser } from '../services/posts.service';
+import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
+import { currentWeeklIndex } from './Feed';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,17 +20,32 @@ const Profil = (props) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{paddingBottom: 85}}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 85 }}>
         <View style={styles.bio}>
           <View>
             <Image style={styles.picture} source={{ uri: user?.picture }} />
             <Text style={styles.username}>@{user?.username}</Text>
           </View>
           <Text style={styles.description}>Ceci est une description{'\n'}Je peux même passer à la ligne</Text>
-          <Text style={styles.stats}>1000 Followers</Text>
+          <View style={styles.stats}>
+            <View style={styles.follows}>
+              <Text style={styles.numbers}>1000</Text>
+              <Text style={styles.labels}>Followers</Text>
+            </View>
+            <View style={styles.follows}>
+              <Text style={styles.numbers}>100</Text>
+              <Text style={styles.labels}>Following</Text>
+            </View>
+            <View style={styles.follows}>
+              <Text style={styles.numbers}>
+                {getPostsByUser(user?.id)?.length}
+              </Text>
+              <Text style={styles.labels}>Posts</Text>
+            </View>
+          </View>
         </View>
         {getPostsByUser(user?.id)?.map(post => (
-          <Post key={post.id} user={user} post={post.post} />
+          <Post key={post.id} user={user} post={post} />
         ))}
       </ScrollView>
       <View style={{ ...styles.button, left: 25 }}>
@@ -39,6 +54,7 @@ const Profil = (props) => {
       <View style={{ ...styles.button, right: 25 }}>
         <Button title='Message' color="black" />
       </View>
+      <Comments />
     </View>
   )
 }
@@ -71,7 +87,20 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   stats: {
+    flexDirection: 'row',
+  },
+  follows: {
+    marginHorizontal: 5,
+  },
+  numbers: {
     fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center'
+  },
+  labels: {
+    color: 'grey',
+    fontSize: 8,
+    textAlign: 'center'
   },
   button: {
     position: 'absolute',
