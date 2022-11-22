@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Button, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
-import { BehaviorSubject } from 'rxjs';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Button, Dimensions, Image, LayoutAnimation, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getPostsByUser } from '../services/posts.service';
 import stories from '../services/stories.service';
 import { getUserById } from '../services/users.service';
@@ -13,6 +13,34 @@ const { width, height } = Dimensions.get('window');
 const Profil = (props) => {
   const [user, setUser] = useState({});
   const [gridView, setGridView] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const _scrollview = useRef();
+  const [postCords, setPostCords] = useState([]);
+
+  const pinch = Gesture.Pinch().onStart((e) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if(e.scale < 1) {
+      if(!gridView) {
+        fadeOut();
+        setGridView(true);
+      }
+    }
+  });
+
+  const fadeIn = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: false
+    }).start();
+  }
+  const fadeOut = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false
+    }).start();
+  }
 
   useEffect(() => {
     currentWeeklIndex.onWeeklIndex().subscribe(i =>
@@ -22,7 +50,7 @@ const Profil = (props) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 85 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 85 }} ref={_scrollview}>
         <View style={styles.bio}>
           <View>
             <Image style={styles.picture} source={{ uri: user?.picture }} />
@@ -46,13 +74,28 @@ const Profil = (props) => {
             </View>
           </View>
         </View>
-        <TouchableOpacity activeOpacity={1} style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }} onPress={() => setGridView(!gridView)}>
-          {getPostsByUser(user?.id)?.map(post => (
-            <View key={post.id} style={{ width: gridView?width / 3:width }}>
-              <Post user={user} post={post} displayInfo={gridView} />
-            </View>
-          ))}
-        </TouchableOpacity>
+        <GestureDetector gesture={pinch}>
+          <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+            {getPostsByUser(user?.id)?.map((post, index) => (
+              <View key={post.id} style={{ width: gridView ? width / 3 : width }}  onLayout={e=>{
+                postCords[index] = e.nativeEvent.layout.y + height/3 - 100;
+                setPostCords(postCords);
+              }}>
+                <TouchableOpacity activeOpacity={1} onPress={()=>{
+                  if(gridView) {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => _scrollview.current.scrollTo({y: postCords[index]}));
+                    fadeIn();
+                    setGridView(false);
+                  } else {
+                    _scrollview.current.scrollTo({y: postCords[index]});
+                  }
+                }}>
+                  <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </GestureDetector>
       </ScrollView>
       <View style={{ ...styles.button, left: 25 }}>
         <Button title='Follow' color="black" />

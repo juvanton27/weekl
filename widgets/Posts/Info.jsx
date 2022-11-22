@@ -41,7 +41,7 @@ const PostInfo = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 9 / 10 * width,
+    width: '100%',
     height: width / 7,
     flex: 1,
     flexDirection: 'row',
