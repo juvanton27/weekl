@@ -49,7 +49,7 @@ const Feed = (props) => {
         showsVerticalScrollIndicator={false}
         onMomentumScrollEnd={onMomentumScrollEnd}
       >
-        {[0, 1, 2, 3].map((id, index) => (
+        {[0, 1, 2, 4].map((id, index) => (
           <Weekl key={id} user_id={id} index={index} scrollToNextWeekl={scrollToNextWeekl} />
         ))}
         <End />

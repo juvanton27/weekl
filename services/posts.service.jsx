@@ -151,16 +151,34 @@ const posts = [
       },
     ],
   },
+  {
+    id: 4,
+    posts: [
+      {
+        id: 8,
+        date: new Date(new Date().getTime() - 86400001 * 1),
+        post: 'https://www.naturephotographie.com/wp-content/uploads/2019/08/Trouble-in-the-Sky.jpg',
+        comments: [
+          {
+            id: 0,
+            user_id: 0,
+            comment: 'Wow ❤️',
+            date: new Date(new Date().getTime() - 86400000 * 2)
+          },
+        ]
+      },
+    ],
+  },
 ];
 
 export function getPostsByUser(id) {
-  if(id===undefined) return undefined;
+  if (id === undefined) return undefined;
   return posts.find(s => s.id === id).posts;
 }
 
 export function getCommentsByPost(id) {
-  if(id===undefined) return undefined;
-  return posts.reduce((p, c) => p.concat(c.posts), []).find(p=>p.id===id).comments??[];
+  if (id === undefined) return undefined;
+  return posts.reduce((p, c) => p.concat(c.posts), []).find(p => p.id === id).comments ?? [];
 }
 
 export default posts;

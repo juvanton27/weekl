@@ -1,4 +1,4 @@
-import stories from "./stories.service";
+import conversations from "./conversations";
 
 const users = [
   {
@@ -6,6 +6,7 @@ const users = [
     username: 'jvantongerlo',
     stories: 0,
     picture: 'https://pub-static.fotor.com/assets/projects/pages/d5bdd0513a0740a8a38752dbc32586d0/fotor-03d1a91a0cec4542927f53c87e0599f6.jpg',
+    conversations: [0,1,2]
   },
   {
     id: 1,
@@ -25,7 +26,7 @@ const users = [
   },
   {
     id: 4,
-    username: 'mmormina',
+    username: 'mmatteo',
     picture: 'https://static-cse.canva.com/blob/951359/1600w-YTfEMXMuMCs.jpg',
   },
   {
@@ -38,4 +39,8 @@ const users = [
 export function getUserById(id) {
   if(id===undefined) return undefined;
   return users.find(u=>u.id===id);
+}
+
+export function getAllConversationsByUserId(id) {
+  return conversations.filter(c=>getUserById(id).conversations.includes(c.id));
 }
