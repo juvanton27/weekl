@@ -1,5 +1,7 @@
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Button, Dimensions, Image, LayoutAnimation, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getPostsByUser } from '../services/posts.service';
 import stories from '../services/stories.service';
@@ -7,8 +9,12 @@ import { getUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
 import { currentWeeklIndex } from './Feed';
+import * as inline_logout from '@fortawesome/free-regular-svg-icons/faShareFromSquare';
+import { logout } from '../services/auth.service';
 
 const { width, height } = Dimensions.get('window');
+
+library.add(inline_logout.faShareFromSquare);
 
 const Profil = (props) => {
   const [user, setUser] = useState({});
@@ -43,7 +49,7 @@ const Profil = (props) => {
   }
 
   useEffect(() => {
-    currentWeeklIndex.onWeeklIndex().subscribe(i =>
+    currentWeeklIndex.onWeeklIndex().subscribe(i => 
       setUser(getUserById(stories[i].id))
     );
   }, []);
@@ -73,6 +79,9 @@ const Profil = (props) => {
               <Text style={styles.labels}>Posts</Text>
             </View>
           </View>
+          <Pressable style={styles.logout} onPress={() => logout().subscribe()}>
+            <FontAwesomeIcon icon={inline_logout.faShareFromSquare} size={30} />
+          </Pressable>
         </View>
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -150,6 +159,11 @@ const styles = StyleSheet.create({
     color: 'grey',
     fontSize: 8,
     textAlign: 'center'
+  },
+  logout: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
   },
   button: {
     position: 'absolute',

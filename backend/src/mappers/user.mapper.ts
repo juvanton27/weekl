@@ -4,6 +4,7 @@ import { User } from "src/models/user.model";
 
 export class UserMapper {
   static fromDbo(dbo: UserDbo): User {
+    if (dbo === null) return undefined;
     return {
       id: dbo.id,
       username: dbo.username,

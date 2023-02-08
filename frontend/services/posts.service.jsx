@@ -1,3 +1,5 @@
+import { from, map } from 'rxjs';
+
 const posts = [
   {
     id: 0,
@@ -180,5 +182,17 @@ export function getCommentsByPost(id) {
   if (id === undefined) return undefined;
   return posts.reduce((p, c) => p.concat(c.posts), []).find(p => p.id === id).comments ?? [];
 }
+
+
+url = 'http://localhost:3000/posts'
+headers = { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp2YW50b25nZXJsbyIsInN1YiI6MSwiaWF0IjoxNjc1ODU4Mjc5LCJleHAiOjE2NzU5NDQ2Nzl9.aViwiDJTcdya51RXfrbTyef4YkcLnCdaf_V3zD9Hotk' };
+
+export function findAllOwnPosts() {
+  return from(fetch(this.url, {
+    method: 'GET',
+    headers: this.headers
+  }));
+}
+
 
 export default posts;
