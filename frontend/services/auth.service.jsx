@@ -21,7 +21,7 @@ export function isLoggedIn() {
 
 export function login(username, password) {
   return from(axios.post('http://localhost:3000/auth/login', { username, password })).pipe(
-    map(({ data }) => { console.log(data); return from(AsyncStorage.setItem('token', data?.access_token)) }),
+    map(({ data }) => from(AsyncStorage.setItem('token', data?.access_token))),
     concatMap(() => isLoggedIn()),
     map(bool => currentIsLogged.set(bool)),
     catchError(err => {
