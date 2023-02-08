@@ -17,6 +17,8 @@ import { PostDbo } from './dbo/post.dbo';
 import { CommentDbo } from './dbo/comment.dbo';
 import { ConversationDbo } from './dbo/conversations.dbo';
 import { MessageDbo } from './dbo/message.dbo';
+import { CommentsController } from './controllers/comments/comments.controller';
+import { CommentsService } from './services/comments/comments.service';
 
 @Module({
   imports: [
@@ -34,12 +36,13 @@ import { MessageDbo } from './dbo/message.dbo';
     }),
     TypeOrmModule.forFeature([StoryDbo, PostDbo, CommentDbo, ConversationDbo, MessageDbo]),
   ],
-  controllers: [AppController, StoriesController, PostsController],
+  controllers: [AppController, StoriesController, PostsController, CommentsController],
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     StoriesService,
-    PostsService
+    PostsService,
+    CommentsService
   ],
 })
 
