@@ -1,4 +1,6 @@
-import { from, map } from 'rxjs';
+import { catchError, concatMap, from, map, throwError } from 'rxjs';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const posts = [
   {
@@ -185,13 +187,22 @@ export function getCommentsByPost(id) {
 
 
 url = 'http://localhost:3000/posts'
-headers = { Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp2YW50b25nZXJsbyIsInN1YiI6MSwiaWF0IjoxNjc1ODU4Mjc5LCJleHAiOjE2NzU5NDQ2Nzl9.aViwiDJTcdya51RXfrbTyef4YkcLnCdaf_V3zD9Hotk' };
 
-export function findAllOwnPosts() {
-  return from(fetch(this.url, {
-    method: 'GET',
-    headers: this.headers
-  }));
+export function findAllPostsByUserId(id) {
+  return from(AsyncStorage.getItem('token')).pipe(
+    concatMap(token => {
+      if(token !== null)
+        return from(axios.get(`${url}/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }));
+        return of({data: undefined})
+    }),
+    map(({ data }) => data),
+    catchError(err => {
+      console.warn(err.message);
+      return throwError(err);
+    })
+  )
 }
 
 

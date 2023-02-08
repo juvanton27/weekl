@@ -1,23 +1,25 @@
 import { library } from '@fortawesome/fontawesome-svg-core';
+import * as inline_logout from '@fortawesome/free-solid-svg-icons/faArrowRightFromBracket';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { getPostsByUser } from '../services/posts.service';
+import { concatMap, forkJoin, map } from 'rxjs';
+import { getProfil, logout } from '../services/auth.service';
+import { findAllPostsByUserId } from '../services/posts.service';
 import stories from '../services/stories.service';
-import { getUserById } from '../services/users.service';
+import { findUserById, getUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
 import { currentWeeklIndex } from './Feed';
-import * as inline_logout from '@fortawesome/free-regular-svg-icons/faShareFromSquare';
-import { logout } from '../services/auth.service';
 
 const { width, height } = Dimensions.get('window');
 
-library.add(inline_logout.faShareFromSquare);
+library.add(inline_logout.faArrowRightFromBracket);
 
 const Profil = (props) => {
   const [user, setUser] = useState({});
+  const [posts, setPosts] = useState([]);
   const [gridView, setGridView] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const _scrollview = useRef();
@@ -52,6 +54,17 @@ const Profil = (props) => {
     currentWeeklIndex.onWeeklIndex().subscribe(i => 
       setUser(getUserById(stories[i].id))
     );
+    if(props.own) {
+      getProfil().pipe(
+        concatMap(({userId}) => {
+          return forkJoin({posts: findAllPostsByUserId(userId), user: findUserById(userId)});
+        }),
+        map(({posts, user}) => {
+          setUser(user);
+          setPosts(posts);
+        }),
+      ).subscribe();
+    }
   }, []);
 
   return (
@@ -74,18 +87,18 @@ const Profil = (props) => {
             </View>
             <View style={styles.follows}>
               <Text style={styles.numbers}>
-                {getPostsByUser(user?.id)?.length}
+                {posts?.length}
               </Text>
               <Text style={styles.labels}>Posts</Text>
             </View>
           </View>
           <Pressable style={styles.logout} onPress={() => logout().subscribe()}>
-            <FontAwesomeIcon icon={inline_logout.faShareFromSquare} size={30} />
+            <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
           </Pressable>
         </View>
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
-            {getPostsByUser(user?.id)?.map((post, index) => (
+            {posts?.map((post, index) => (
               <View key={post.id} style={{ width: gridView ? width / 3 : width }}  onLayout={e=>{
                 postCords[index] = e.nativeEvent.layout.y + height/3 - 100;
                 setPostCords(postCords);

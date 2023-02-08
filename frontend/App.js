@@ -57,7 +57,7 @@ export default function App() {
               onMomentumScrollEnd={onMomentumScrollEnd}
             >
               <Conversations />
-              <Profil />
+              <Profil own={true} />
               <Feed />
               <Profil />
             </ScrollView>

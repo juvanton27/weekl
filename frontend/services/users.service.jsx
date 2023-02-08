@@ -1,4 +1,7 @@
 import conversations from "./conversations";
+import axios from 'axios';
+import { catchError, concatMap, from, map, throwError } from "rxjs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const users = [
   {
@@ -43,4 +46,23 @@ export function getUserById(id) {
 
 export function getAllConversationsByUserId(id) {
   return conversations.filter(c=>getUserById(id).conversations.includes(c.id));
+}
+
+const url = 'http://localhost:3000/users';
+
+export function findUserById(id) {
+  return from(AsyncStorage.getItem('token')).pipe(
+    concatMap(token => {
+      if(token !== null)
+        return from(axios.get(`${url}/${id}`, {
+          headers: {Authorization: `Bearer ${token}`}
+        }));
+      else return of({data: undefined});
+    }),
+    map(({data}) => data),
+    catchError(err => {
+      console.warn(err.message);
+      return throwError(err);
+    })
+  )
 }

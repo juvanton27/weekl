@@ -17,7 +17,7 @@ export class UsersService {
   ) { }
 
   create(username: string, password: string): Observable<User> {
-    return this.findOne(username).pipe(
+    return this.findOneByUsername(username).pipe(
       concatMap((user: User) => {
         if(user) throw new MethodNotAllowedException(`User with username ${username} already exists`);
         return from(bcrypt.hash(password, this.saltOrRounds));
@@ -32,8 +32,14 @@ export class UsersService {
     );
   }
 
-  findOne(username: string): Observable<User> {
+  findOneByUsername(username: string): Observable<User> {
     return from(this.repo.findOneBy({ username })).pipe(
+      map((dbo: UserDbo) => UserMapper.fromDbo(dbo))
+    );
+  }
+
+  findOneById(id: number): Observable<User> {
+    return from(this.repo.findOneBy({ id })).pipe(
       map((dbo: UserDbo) => UserMapper.fromDbo(dbo))
     );
   }

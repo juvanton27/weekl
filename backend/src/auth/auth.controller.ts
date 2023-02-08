@@ -1,11 +1,11 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { from, map, Observable } from 'rxjs';
 import { UserDto } from 'src/dto/user.dto';
 import { UserMapper } from 'src/mappers/user.mapper';
 import { User } from 'src/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
-import { Public } from './jwt-auth.guard';
+import { JwtAuthGuard, Public } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
@@ -28,5 +28,11 @@ export class AuthController {
     return this.usersService.create(username, password).pipe(
       map((model: User) => UserMapper.toDto(model)),
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profil')
+  getProfile(@Request() req) {
+    return req.user;
   }
 }

@@ -32,7 +32,7 @@ const Post = (props) => {
     <View style={styles.container}>
       <Image
         style={{ ...styles.post, borderRadius: props.displayInfo ? 10 : 20, width: props.displayInfo ? '95%' : '90%' }}
-        source={{ uri: props.post.post }}
+        source={{ uri: props.post.picture }}
         resizeMode='cover'
       />
       <Animated.View style={{...styles.like, opacity: fadeAnim}}>

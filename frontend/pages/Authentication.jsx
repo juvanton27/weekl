@@ -4,7 +4,7 @@ import * as eye_slash from '@fortawesome/free-regular-svg-icons/faEyeSlash';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { login, signup } from "../services/auth.service";
 
 const { width, height } = Dimensions.get('window');
@@ -14,12 +14,16 @@ library.add(eye_slash.faEyeSlash, eye.faEye);
 const Authentication = (props) => {
   // Define if the form is as login (0) or register (1)
   const [status, setStatus] = useState(0);
+  // Form
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [hiddenPassword, setHiddenPassword] = useState(true);
+  // Loading
+  const [isLoading, setIsLoading] = useState(false);
 
   const submit = () => {
+    setIsLoading(true)
     if (status === 0) {
       login(username, password).subscribe()
     } else {
@@ -34,6 +38,7 @@ const Authentication = (props) => {
         })
       } else {
         console.warn('Not same passwords')
+        setIsLoading(false);
       }
     }
   }
@@ -69,11 +74,16 @@ const Authentication = (props) => {
           : ''
       }
       <Pressable style={styles.button} onPress={() => submit()}>
-        <Text style={{ color: 'white', fontSize: 20 }}>
-          {
-            status === 0 ? 'Login' : 'Signup'
-          }
-        </Text>
+        {
+          isLoading ?
+            <ActivityIndicator />
+            :
+            <Text style={{ color: 'white', fontSize: 20 }}>
+              {
+                status === 0 ? 'Login' : 'Signup'
+              }
+            </Text>
+        }
       </Pressable>
       <Text style={styles.subtitle} onPress={() => setStatus(status === 0 ? 1 : 0)}>
         {
