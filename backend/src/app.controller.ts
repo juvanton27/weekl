@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { from, Observable } from 'rxjs';
 import { AppService } from './app.service';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard, Public } from './auth/jwt-auth.guard';
@@ -11,10 +12,11 @@ export class AppController {
     private readonly authService: AuthService,
   ) { }
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  login(@Request() req): Observable<any> {
+    return from(this.authService.login(req.user));
   }
 
   @UseGuards(JwtAuthGuard)
