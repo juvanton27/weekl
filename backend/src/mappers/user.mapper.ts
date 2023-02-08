@@ -13,9 +13,8 @@ export class UserMapper {
 
   static toDto(model: User): UserDto {
     return {
-      id: model.id,
+      id: model.id??undefined,
       username: model.username,
-      password: model.password,
     }
   }
 }
