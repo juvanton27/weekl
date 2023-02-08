@@ -1,16 +1,19 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('users')
-export class UserDbo {
+@Entity('comments')
+export class CommentDbo {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  username: string;
+  date: Date;
 
   @Column()
-  password: string;
+  label: string;
 
   @Column()
-  picture: string;
+  post_id: number;
+
+  @Column()
+  user_id: number;
 }

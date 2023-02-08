@@ -1,16 +1,19 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('users')
-export class UserDbo {
+@Entity('stories')
+export class StoryDbo {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  username: string;
+  date: Date;
 
   @Column()
-  password: string;
+  video: string;
 
   @Column()
-  picture: string;
+  user_id: number;
+
+  @Column()
+  description: string;
 }

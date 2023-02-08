@@ -6,8 +6,17 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { StoriesController } from './controllers/stories/stories.controller';
+import { StoryDbo } from './dbo/story.dbo';
 import { UserDbo } from './dbo/user.dbo';
+import { StoriesService } from './services/stories/stories.service';
 import { UsersModule } from './users/users.module';
+import { PostsService } from './services/posts/posts.service';
+import { PostsController } from './controllers/posts/posts.controller';
+import { PostDbo } from './dbo/post.dbo';
+import { CommentDbo } from './dbo/comment.dbo';
+import { ConversationDbo } from './dbo/conversations.dbo';
+import { MessageDbo } from './dbo/message.dbo';
 
 @Module({
   imports: [
@@ -20,14 +29,17 @@ import { UsersModule } from './users/users.module';
       username: 'root',
       password: 'azerty12345',
       database: 'weekl',
-      entities: [UserDbo],
+      entities: [UserDbo, StoryDbo, PostDbo, CommentDbo, ConversationDbo, MessageDbo],
       synchronize: false,
     }),
+    TypeOrmModule.forFeature([StoryDbo, PostDbo, CommentDbo, ConversationDbo, MessageDbo]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, StoriesController, PostsController],
   providers: [
     AppService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard }
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    StoriesService,
+    PostsService
   ],
 })
 

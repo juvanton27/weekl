@@ -8,13 +8,15 @@ export class UserMapper {
       id: dbo.id,
       username: dbo.username,
       password: dbo.password,
+      picture: dbo.picture
     }
   }
 
   static toDto(model: User): UserDto {
     return {
-      id: model.id??undefined,
+      id: model.id,
       username: model.username,
+      picture: model.picture
     }
   }
 }

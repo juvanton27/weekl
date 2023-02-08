@@ -1,16 +1,19 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('users')
-export class UserDbo {
+@Entity('messages')
+export class MessageDbo {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  username: string;
+  content: string;
 
   @Column()
-  password: string;
+  date: Date;
 
   @Column()
-  picture: string;
+  user_id: number;
+
+  @Column()
+  conversation_id: number;
 }
