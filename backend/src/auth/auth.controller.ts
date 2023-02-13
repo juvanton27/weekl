@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
-import { from, map, Observable } from 'rxjs';
+import { catchError, from, map, Observable, throwError } from 'rxjs';
 import { UserDto } from 'src/dto/user.dto';
 import { UserMapper } from 'src/mappers/user.mapper';
 import { User } from 'src/models/user.model';
@@ -19,7 +19,9 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   login(@Request() req): Observable<any> {
-    return from(this.authService.login(req.user));
+    return from(this.authService.login(req.user)).pipe(
+      catchError(err => throwError(err))
+    );
   }
 
   @Public()

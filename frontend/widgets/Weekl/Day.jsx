@@ -1,9 +1,9 @@
 import { Video } from 'expo-av';
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import { BehaviorSubject } from "rxjs";
 import { pageIndex } from '../../App';
-import { currentIndex } from "./Weekl";
+import { currentIndex, story } from "./Weekl";
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,8 +13,9 @@ export const currentProgress = {
   onProgress: () => progress.asObservable(),
 }
 
-const Day = (props) => {
+const Day = ({ visible, currentStory }) => {
   const ref = useRef();
+  const [video, setVideo] = useState(undefined);
 
   const onPlaybackStatusUpdate = (e) => {
     if (e.didJustFinish) {
@@ -24,6 +25,26 @@ const Day = (props) => {
     }
   }
 
+  const tempVideoSource = (video) => {
+    console.log(video);
+    switch (video) {
+      case '../assets/videos/01.mp4': return require('../../assets/videos/01.mp4');
+      case '../assets/videos/02.mp4': return require('../../assets/videos/02.mp4');
+      case '../assets/videos/03.mp4': return require('../../assets/videos/03.mp4');
+      case '../assets/videos/04.mp4': return require('../../assets/videos/04.mp4');
+      case '../assets/videos/05.mp4': return require('../../assets/videos/05.mp4');
+      case '../assets/videos/06.mp4': return require('../../assets/videos/06.mp4');
+      case '../assets/videos/07.mp4': return require('../../assets/videos/07.mp4');
+      default: return require('../../assets/videos/01.mp4');
+    }
+  }
+
+  useEffect(() => {
+    currentStory?.onStory().subscribe(
+      story => setVideo(tempVideoSource(story?.video))
+    )
+  }, [])
+
   return (
     <Video
       ref={ref}
@@ -31,9 +52,9 @@ const Day = (props) => {
       rate={1.0}
       volume={1.0}
       isMuted={false}
-      source={props.video?.video}
+      source={video}
       resizeMode='cover'
-      shouldPlay={props.visible && pageIndex.getValue()===2}
+      shouldPlay={visible && pageIndex.getValue() === 2}
       positionMillis={0}
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { concatMap, forkJoin, map } from 'rxjs';
+import { currentSnackbar } from '../App';
 import { getProfil, logout } from '../services/auth.service';
 import { findAllPostsByUserId } from '../services/posts.service';
 import stories from '../services/stories.service';
@@ -50,9 +51,15 @@ const Profil = (props) => {
     }).start();
   }
 
+  const onLogoutClick = () => {
+    logout().subscribe({
+      next: currentSnackbar.set({type: 'INFO', message: 'You logged out'})
+    })
+  }
+
   useEffect(() => {
     currentWeeklIndex.onWeeklIndex().subscribe(i => 
-      setUser(getUserById(stories[i].id))
+      setUser(getUserById(stories[i]?.id))
     );
     if(props.own) {
       getProfil().pipe(
@@ -92,7 +99,7 @@ const Profil = (props) => {
               <Text style={styles.labels}>Posts</Text>
             </View>
           </View>
-          <Pressable style={styles.logout} onPress={() => logout().subscribe()}>
+          <Pressable style={styles.logout} onPress={() => onLogoutClick()}>
             <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
           </Pressable>
         </View>

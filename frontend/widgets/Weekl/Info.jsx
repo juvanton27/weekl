@@ -1,7 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { getUserById } from "../../services/users.service";
+import { currentSnackbar, snackbar } from "../../App";
+import { findUserById, getUserById } from "../../services/users.service";
 import { capFirstLetter, isSameDay } from "../../utils/utils";
 import { currentProgress } from "./Day";
 
@@ -28,22 +29,30 @@ const days = [
  * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
  */
 const handleProgressBar = (progress, storyToCompare, props, length) => {
-  if (!isNaN(progress) && props.visible && props.video?.date.getTime() >= storyToCompare.date.getTime()) {
+  if (!isNaN(progress) && props.visible && new Date(props.video?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
     if (props.video?.id === storyToCompare.id)
       return progress * width / (length * 1.5)
-    if (props.video?.date.getTime() > storyToCompare.date.getTime())
+    if (new Date(props.video?.date).getTime() > new Date(storyToCompare.date).getTime())
       return width / (length * 1.5)
   }
   return 0;
 }
 
-const WeeklInfo = (props) => {
-  const user = getUserById(props.user);
+const WeeklInfo = ({user_id, visible, handleDayClick, stories, currentStory}) => {
+  const [user, setUser] = useState(undefined);
   const [progress, setProgress] = useState(0);
-  const length = props.stories.filter(s => isSameDay(s.date, props.video?.date)).length;
+  const [story, setStory] = useState(undefined);
+  const length = stories.value?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).length;
 
   useEffect(() => {
     currentProgress.onProgress().subscribe(progress => setProgress(progress));
+    findUserById(user_id).subscribe({
+      next: u => setUser(u),
+      error: err => currentSnackbar.set({type: 'ERROR', message: 'User not found'})
+    });
+    currentStory.onStory().subscribe(
+      story => setStory(story)
+    )
   }, []);
 
   return (
@@ -53,15 +62,15 @@ const WeeklInfo = (props) => {
     >
       <Image
         style={styles.picture}
-        source={{uri: user?.picture}}
+        source={{uri: user && user.picture !== undefined && user.picture !== ''?user.picture:"https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"}}
         resizeMode='cover'
       />
       <View style={styles.infos}>
         <Text style={styles.username}>@{user?.username}</Text>
         <View style={styles.barContainer}>
-          {props.stories.filter(s => isSameDay(s.date, props.video?.date)).map((s, i) =>
+          {stories.value?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
             <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
-              <View style={{ ...styles.progress, width: handleProgressBar(progress, s, props, length) }}></View>
+              <View style={{ ...styles.progress, width: handleProgressBar(progress, s, {video: story, user_id, visible, handleDayClick}, length) }}></View>
             </View>
           )}
         </View>
@@ -74,10 +83,10 @@ const WeeklInfo = (props) => {
             days.map((d, index) => (
               <View
                 key={index}
-                style={{ ...styles.bubble, backgroundColor: isSameDay(props.video?.date, d.date) ? 'white' : 'rgba(255,255,255,0.5)' }}
-                onTouchEnd={() => { props.handleDayClick(d) }}
+                style={{ ...styles.bubble, backgroundColor: isSameDay(new Date(story?.date), new Date(d.date)) ? 'white' : 'rgba(255,255,255,0.5)' }}
+                onTouchEnd={() => { handleDayClick(d) }}
               >
-                <Text>{isSameDay(props.video?.date, d.date) ?
+                <Text>{isSameDay(new Date(story?.date), d.date) ?
                   capFirstLetter(d.date.toLocaleDateString('fr-FR', { weekday: 'long' })) :
                   d.date.toLocaleDateString('fr-FR', { weekday: 'narrow' })}
                 </Text>

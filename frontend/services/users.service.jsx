@@ -60,9 +60,6 @@ export function findUserById(id) {
       else return of({data: undefined});
     }),
     map(({data}) => data),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
+    catchError(err => throwError(err))
   )
 }

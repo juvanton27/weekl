@@ -1,3 +1,7 @@
+import { catchError, concatMap, from, map, throwError } from 'rxjs';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const stories = [
   {
     id: 0,
@@ -58,6 +62,36 @@ const stories = [
 
 export function getActiveStoriesByUser(id) {
   return stories.find(s => s.id === id).videos.filter(v => v.date.getTime() >= new Date().getTime() - (7 * 86400000));
+}
+
+const url = 'http://localhost:3000/stories'
+
+export function findAllActiveUserIds() {
+  return from(AsyncStorage.getItem('token')).pipe(
+    concatMap(token => {
+      if(token !== null)
+        return from(axios.get(`${url}/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }));
+        return of({data: undefined})
+    }),
+    map(({ data }) => data),
+    catchError(err => throwError(err))
+  );
+}
+
+export function findAllActiveStoriesByUserId(id) {
+  return from(AsyncStorage.getItem('token')).pipe(
+    concatMap(token => {
+      if(token !== null)
+        return from(axios.get(`${url}/user/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }));
+        return of({data: undefined})
+    }),
+    map(({ data }) => data),
+    catchError(err => throwError(err))
+  )
 }
 
 export default stories;

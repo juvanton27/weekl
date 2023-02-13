@@ -21,10 +21,10 @@ const PostInfo = (props) => {
       colors={['transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
     >
       <View style={styles.left}>
-        <Image style={styles.picture} source={{ uri: props.user.picture }} resizeMode='cover' />
+        <Image style={styles.picture} source={{ uri: props.user?.picture }} resizeMode='cover' />
       </View>
       <View style={styles.mid}>
-        <Text style={styles.username}>@{props.user.username}</Text>
+        <Text style={styles.username}>@{props.user?.username}</Text>
         <Text style={styles.location}>Avenue de QuelquePart</Text>
       </View>
       <View style={styles.right}>

@@ -186,7 +186,7 @@ export function getCommentsByPost(id) {
 }
 
 
-url = 'http://localhost:3000/posts'
+const url = 'http://localhost:3000/posts'
 
 export function findAllPostsByUserId(id) {
   return from(AsyncStorage.getItem('token')).pipe(
@@ -198,10 +198,7 @@ export function findAllPostsByUserId(id) {
         return of({data: undefined})
     }),
     map(({ data }) => data),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
+    catchError(err => throwError(err))
   )
 }
 

@@ -19,10 +19,7 @@ export function isLoggedIn() {
       return of({ status: 0 });
     }),
     map(({ status }) => status === 200),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
+    catchError(err => throwError(err))
   );
 }
 
@@ -42,10 +39,7 @@ export function getProfil() {
       return of({data: undefined});
     }),
     map(({ data }) => data),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
+    catchError(err => throwError(err))
   );
 }
 
@@ -59,10 +53,7 @@ export function login(username, password) {
     map(({ data }) => from(AsyncStorage.setItem('token', data?.access_token))),
     concatMap(() => isLoggedIn()),
     map(bool => currentIsLogged.set(bool)),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
+    catchError(err => throwError(err))
   );
 }
 
@@ -73,7 +64,7 @@ export function logout() {
   return from(AsyncStorage.removeItem('token')).pipe(
     concatMap(() => isLoggedIn()),
     map(bool => currentIsLogged.set(bool)),
-    catchError(err => console.warn(err.message)),
+    catchError(err => throwError(err)),
   );
 }
 
@@ -85,9 +76,6 @@ export function logout() {
  */
 export function signup(username, password) {
   return from(axios.post('http://localhost:3000/auth/register', { username, password })).pipe(
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    }),
+    catchError(err => throwError(err)),
   );
 }

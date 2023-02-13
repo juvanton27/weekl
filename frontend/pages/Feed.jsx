@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
-import End from "../widgets/Weekl/FeedEnd";
 import { BehaviorSubject } from "rxjs";
+import End from "../widgets/Weekl/FeedEnd";
 
-import Weekl, { currentIndex } from "../widgets/Weekl/Weekl";
+import { currentSnackbar } from "../App";
+import { findAllActiveUserIds } from "../services/stories.service";
 import { currentProgress } from "../widgets/Weekl/Day";
+import Weekl, { currentIndex } from "../widgets/Weekl/Weekl";
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,12 +19,13 @@ export const currentWeeklIndex = {
   onWeeklIndex: () => weeklIndex.asObservable(),
 }
 
-const Feed = (props) => {
+const Feed = () => {
   const [weeklIndexState, setWeeklIndexState] = useState(0);
+  const [users, setUsers] = useState([]);
   let _feedview = useRef();
 
   const scrollToNextWeekl = () => {
-    _feedview.current.scrollTo({ y: (weeklIndex.getValue()+1)*height });
+    _feedview.current.scrollTo({ y: (weeklIndex.getValue() + 1) * height });
   }
 
   const onMomentumScrollEnd = (e) => {
@@ -37,6 +40,12 @@ const Feed = (props) => {
     currentWeeklIndex.onWeeklIndex().subscribe(i => {
       setWeeklIndexState(i);
     });
+    findAllActiveUserIds().subscribe({
+      next: res => setUsers(res), 
+      error: err => {
+        currentSnackbar.set({ type: 'ERROR', message: err.message })
+      }
+    })
   }, [])
 
   return (
@@ -49,8 +58,8 @@ const Feed = (props) => {
         showsVerticalScrollIndicator={false}
         onMomentumScrollEnd={onMomentumScrollEnd}
       >
-        {[0, 1, 2, 4].map((id, index) => (
-          <Weekl key={id} user_id={id} index={index} scrollToNextWeekl={scrollToNextWeekl} />
+        {users?.map((id, index) => (
+          <Weekl key={id} user_id={id} w_index={index} scrollToNextWeekl={scrollToNextWeekl} />
         ))}
         <End />
       </ScrollView>

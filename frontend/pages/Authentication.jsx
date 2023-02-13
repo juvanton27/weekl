@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { currentSnackbar } from "../App";
 import { login, signup } from "../services/auth.service";
 
 const { width, height } = Dimensions.get('window');
@@ -24,23 +25,51 @@ const Authentication = (props) => {
 
   const submit = () => {
     setIsLoading(true)
-    if (status === 0) {
-      login(username, password).subscribe()
+    // Champs completion
+    if (!username || username === '' || !password || password === '') {
+      currentSnackbar.set({type: 'ERROR', message: 'Username or password empty'});
+      setIsLoading(false);
     } else {
-      if (status === 1 && password === passwordConfirmation) {
-        signup(username, password).subscribe(() => {
-          // Reset form after registration
-          setUserName('');
-          setPassword('');
-          setPasswordConfirmation('');
-          setHiddenPassword(true);
-          setStatus(0);
+      // Form as login
+      if (status === 0) {
+        login(username, password).subscribe({
+          next: () => currentSnackbar.set({type: 'SUCCESS', message: 'Authentication succeeded'}),
+          error: (err) => {
+            resetForm();
+            currentSnackbar.set({type: 'ERROR', message: err.message});
+          }
         })
+      // Form as register
       } else {
-        console.warn('Not same passwords')
-        setIsLoading(false);
+        // Form valid
+        if (status === 1 && password === passwordConfirmation) {
+          signup(username, password).subscribe({
+            next: () => {
+              currentSnackbar.set({type: 'SUCCESS', message: 'Registration succeeded\nPlease log in'});
+              resetForm();
+            },
+            error: (err) => {
+              resetForm();
+              currentSnackbar.set({type: 'ERROR', message: err.message});
+            }
+          })
+        // Form invalid
+        } else {
+          currentSnackbar.set({type: 'ERROR', message: 'Not same passwords'});
+          setIsLoading(false);
+        }
       }
     }
+  }
+
+  const resetForm = () => {
+    // Reset form after registration
+    setUserName('');
+    setPassword('');
+    setPasswordConfirmation('');
+    setHiddenPassword(true);
+    setStatus(0);
+    setIsLoading(false);
   }
 
   return (

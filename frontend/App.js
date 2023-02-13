@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, concatMap, delay, from, map, of, timeInterval, timeout } from 'rxjs';
 import Conversations from './pages/Conversations';
 import Feed from './pages/Feed';
 import Profil from './pages/Profil';
 import { isLoggedIn } from './services/auth.service';
 import Authentication from './pages/Authentication';
 import Loading from './pages/Loading';
+import SnackBar from './utils/SnackBar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,9 +21,16 @@ export const currentIsLogged = {
   set: i => isLogged.next(i),
   onIsLogged: () => isLogged.asObservable()
 }
+
+export const snackbar = new BehaviorSubject({ type: undefined, message: undefined });
+export const currentSnackbar = {
+  set: ({ type, message }) => snackbar.next({ type, message }),
+  onSnackbar: () => snackbar.asObservable(),
+}
 export default function App() {
   const [page, setPage] = useState(2);
   const [loggedIn, setLoggedIn] = useState(undefined);
+  const [snackbarState, setSnackbarState] = useState({ type: undefined, message: undefined });
 
   const onMomentumScrollEnd = (e) => {
     currentPageIndex.set(e.nativeEvent.contentOffset.x / width)
@@ -34,6 +42,11 @@ export default function App() {
     currentIsLogged.onIsLogged().subscribe(i => setLoggedIn(i));
     // Verify if logged on init
     isLoggedIn().subscribe(i => currentIsLogged.set(i));
+    // Error handeling
+    currentSnackbar.onSnackbar().pipe(
+      concatMap(({ type, message }) => from(new Promise(resolve => resolve(setSnackbarState({ type, message }))))),
+      map(() => new Promise(resolve => resolve(setTimeout(() => setSnackbarState({ type: undefined, message: undefined }), 3000)))),
+    ).subscribe();
   }, []);
 
   return (
@@ -62,6 +75,9 @@ export default function App() {
               <Profil />
             </ScrollView>
       }
+      <View style={styles.snack}>
+        <SnackBar type={snackbarState.type} message={snackbarState.message} />
+      </View>
     </View>
   );
 }
@@ -71,5 +87,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    height,
+    width
   },
+  snack: {
+    position: 'absolute',
+    bottom: 0,
+    height: 60,
+    width: 9 / 10 * width,
+    margin: 20,
+  }
 });
