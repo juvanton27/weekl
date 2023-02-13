@@ -120,7 +120,7 @@ CREATE TABLE `posts` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -129,7 +129,7 @@ CREATE TABLE `posts` (
 
 LOCK TABLES `posts` WRITE;
 /*!40000 ALTER TABLE `posts` DISABLE KEYS */;
-INSERT INTO `posts` VALUES (1,'2023-02-08 08:30:00','https://ericheymans.b-cdn.net/wp-content/uploads/2012/08/dawn-field-grass-164025.jpg',1,'Rien');
+INSERT INTO `posts` VALUES (1,'2023-02-08 08:30:00','https://ericheymans.b-cdn.net/wp-content/uploads/2012/08/dawn-field-grass-164025.jpg',1,'Rien'),(2,'2023-02-08 08:31:00','https://www.radiofrance.fr/s3/cruiser-production/2022/06/5f6ac5ab-37d9-4ca6-8f79-3694fcfec071/560x315_paysage-monet.jpg',1,'Rien'),(3,'2023-02-08 08:32:00','https://www.okvoyage.com/wp-content/uploads/2021/02/paysages-norvege-scaled.jpeg',1,'Rien'),(4,'2023-02-08 08:33:00','https://terres-sauvages.ch/wp-content/uploads/2020/06/Iles-Lofoten-vue-du-ciel.jpg',1,'Rien'),(5,'2023-02-08 08:30:00','https://ericheymans.b-cdn.net/wp-content/uploads/2012/08/dawn-field-grass-164025.jpg',2,'Rien'),(6,'2023-02-08 08:31:00','https://www.radiofrance.fr/s3/cruiser-production/2022/06/5f6ac5ab-37d9-4ca6-8f79-3694fcfec071/560x315_paysage-monet.jpg',3,'Rien'),(7,'2023-02-08 08:32:00','https://www.okvoyage.com/wp-content/uploads/2021/02/paysages-norvege-scaled.jpeg',4,'Rien'),(8,'2023-02-08 08:33:00','https://terres-sauvages.ch/wp-content/uploads/2020/06/Iles-Lofoten-vue-du-ciel.jpg',5,'Rien');
 /*!40000 ALTER TABLE `posts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -149,7 +149,7 @@ CREATE TABLE `stories` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `stories_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,7 +158,7 @@ CREATE TABLE `stories` (
 
 LOCK TABLES `stories` WRITE;
 /*!40000 ALTER TABLE `stories` DISABLE KEYS */;
-INSERT INTO `stories` VALUES (1,'2023-02-08 08:30:00','../assets/videos/01.mp4',1,'Rien');
+INSERT INTO `stories` VALUES (1,'2023-02-07 08:30:00','../assets/videos/01.mp4',1,'Rien'),(2,'2023-02-07 08:31:00','../assets/videos/02.mp4',1,'Rien'),(3,'2023-02-07 08:32:00','../assets/videos/03.mp4',1,'Rien'),(4,'2023-02-08 08:30:00','../assets/videos/04.mp4',1,'Rien'),(5,'2023-02-08 08:30:00','../assets/videos/05.mp4',2,'Rien'),(6,'2023-02-08 08:30:00','../assets/videos/06.mp4',3,NULL),(7,'2023-02-07 08:30:00','../assets/videos/07.mp4',4,'Rien');
 /*!40000 ALTER TABLE `stories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -175,7 +175,7 @@ CREATE TABLE `users` (
   `password` varchar(100) DEFAULT NULL,
   `picture` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -184,7 +184,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'jvantongerlo','azerty',NULL),(2,'mgiunta','azerty',NULL),(3,'ljanssens','azerty',NULL),(4,'mlibidi','azerty',NULL),(5,'mmatteo','azerty',NULL),(6,'lvantongerlo','azerty',NULL);
+INSERT INTO `users` VALUES (1,'jvantongerlo','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu','https://pub-static.fotor.com/assets/projects/pages/d5bdd0513a0740a8a38752dbc32586d0/fotor-03d1a91a0cec4542927f53c87e0599f6.jpg'),(2,'mgiunta','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu',''),(3,'ljanssens','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu','https://newprofilepic2.photo-cdn.net//assets/images/article/profile.jpg'),(4,'mlibidi','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu','https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg'),(5,'mmatteo','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu','https://static-cse.canva.com/blob/951359/1600w-YTfEMXMuMCs.jpg'),(6,'lvantongerlo','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu','https://i.pinimg.com/736x/0a/53/c3/0a53c3bbe2f56a1ddac34ea04a26be98.jpg'),(13,'ldelaunois','$2b$10$x33ueIKsYsy3wXyMRtQnjOS1AGPaGy.R052TQ5WKjrQSyJ/ErzXuu',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,4 +201,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-02-08 13:31:57
+-- Dump completed on 2023-02-13  9:33:18
