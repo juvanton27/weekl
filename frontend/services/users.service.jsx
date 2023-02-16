@@ -1,7 +1,7 @@
-import conversations from "./conversations";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { catchError, concatMap, from, map, throwError } from "rxjs";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import conversations from "./conversations";
 
 const users = [
   {
@@ -9,7 +9,7 @@ const users = [
     username: 'jvantongerlo',
     stories: 0,
     picture: 'https://pub-static.fotor.com/assets/projects/pages/d5bdd0513a0740a8a38752dbc32586d0/fotor-03d1a91a0cec4542927f53c87e0599f6.jpg',
-    conversations: [0,1,2]
+    conversations: [0, 1, 2]
   },
   {
     id: 1,
@@ -40,12 +40,12 @@ const users = [
 ]
 
 export function getUserById(id) {
-  if(id===undefined) return undefined;
-  return users.find(u=>u.id===id);
+  if (id === undefined) return undefined;
+  return users.find(u => u.id === id);
 }
 
 export function getAllConversationsByUserId(id) {
-  return conversations.filter(c=>getUserById(id).conversations.includes(c.id));
+  return conversations.filter(c => getUserById(id).conversations.includes(c.id));
 }
 
 const url = 'http://localhost:3000/users';
@@ -53,13 +53,13 @@ const url = 'http://localhost:3000/users';
 export function findUserById(id) {
   return from(AsyncStorage.getItem('token')).pipe(
     concatMap(token => {
-      if(token !== null)
+      if (token !== null)
         return from(axios.get(`${url}/${id}`, {
-          headers: {Authorization: `Bearer ${token}`}
+          headers: { Authorization: `Bearer ${token}` }
         }));
-      else return of({data: undefined});
+      else return of({ data: undefined });
     }),
-    map(({data}) => data),
+    map(({ data }) => data),
     catchError(err => throwError(err))
   )
 }

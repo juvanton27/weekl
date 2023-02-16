@@ -6,19 +6,19 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { StoriesController } from './controllers/stories/stories.controller';
-import { StoryDbo } from './dbo/story.dbo';
-import { UserDbo } from './dbo/user.dbo';
-import { StoriesService } from './services/stories/stories.service';
-import { UsersModule } from './users/users.module';
-import { PostsService } from './services/posts/posts.service';
+import { CommentsController } from './controllers/comments/comments.controller';
 import { PostsController } from './controllers/posts/posts.controller';
-import { PostDbo } from './dbo/post.dbo';
+import { StoriesController } from './controllers/stories/stories.controller';
 import { CommentDbo } from './dbo/comment.dbo';
 import { ConversationDbo } from './dbo/conversations.dbo';
 import { MessageDbo } from './dbo/message.dbo';
-import { CommentsController } from './controllers/comments/comments.controller';
+import { PostDbo } from './dbo/post.dbo';
+import { StoryDbo } from './dbo/story.dbo';
+import { UserDbo } from './dbo/user.dbo';
 import { CommentsService } from './services/comments/comments.service';
+import { PostsService } from './services/posts/posts.service';
+import { StoriesService } from './services/stories/stories.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [

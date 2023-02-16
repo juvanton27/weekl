@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     right: 15
   },
   content: {
-    paddingTop: 1/15*height
+    paddingTop: 1 / 15 * height
   },
   comment: {
     flex: 1,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     fontWeight: 'bold'
-  },  
+  },
   commentContent: {
 
   }

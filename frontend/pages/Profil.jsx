@@ -28,8 +28,8 @@ const Profil = (props) => {
 
   const pinch = Gesture.Pinch().onStart((e) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    if(e.scale < 1) {
-      if(!gridView) {
+    if (e.scale < 1) {
+      if (!gridView) {
         fadeOut();
         setGridView(true);
       }
@@ -53,20 +53,20 @@ const Profil = (props) => {
 
   const onLogoutClick = () => {
     logout().subscribe({
-      next: currentSnackbar.set({type: 'INFO', message: 'You logged out'})
+      next: currentSnackbar.set({ type: 'INFO', message: 'You logged out' })
     })
   }
 
   useEffect(() => {
-    currentWeeklIndex.onWeeklIndex().subscribe(i => 
+    currentWeeklIndex.onWeeklIndex().subscribe(i =>
       setUser(getUserById(stories[i]?.id))
     );
-    if(props.own) {
+    if (props.own) {
       getProfil().pipe(
-        concatMap(({userId}) => {
-          return forkJoin({posts: findAllPostsByUserId(userId), user: findUserById(userId)});
+        concatMap(({ userId }) => {
+          return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) });
         }),
-        map(({posts, user}) => {
+        map(({ posts, user }) => {
           setUser(user);
           setPosts(posts);
         }),
@@ -106,17 +106,17 @@ const Profil = (props) => {
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
             {posts?.map((post, index) => (
-              <View key={post.id} style={{ width: gridView ? width / 3 : width }}  onLayout={e=>{
-                postCords[index] = e.nativeEvent.layout.y + height/3 - 100;
+              <View key={post.id} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
+                postCords[index] = e.nativeEvent.layout.y + height / 3 - 100;
                 setPostCords(postCords);
               }}>
-                <TouchableOpacity activeOpacity={1} onPress={()=>{
-                  if(gridView) {
-                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => _scrollview.current.scrollTo({y: postCords[index]}));
+                <TouchableOpacity activeOpacity={1} onPress={() => {
+                  if (gridView) {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => _scrollview.current.scrollTo({ y: postCords[index] }));
                     fadeIn();
                     setGridView(false);
                   } else {
-                    _scrollview.current.scrollTo({y: postCords[index]});
+                    _scrollview.current.scrollTo({ y: postCords[index] });
                   }
                 }}>
                   <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />

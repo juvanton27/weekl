@@ -26,7 +26,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  register(@Body() {username, password}: {username: string, password: string}): Observable<UserDto> {
+  register(@Body() { username, password }: { username: string, password: string }): Observable<UserDto> {
     return this.usersService.create(username, password).pipe(
       map((model: User) => UserMapper.toDto(model)),
     );

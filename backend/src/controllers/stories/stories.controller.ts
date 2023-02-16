@@ -12,7 +12,7 @@ export class StoriesController {
   ) { }
 
   @Get()
-  findAll(): Observable<StoryDto[]> {    
+  findAll(): Observable<StoryDto[]> {
     return this.storiesService.findAll().pipe(
       map((models: Story[]) => models.map(model => StoryMapper.toDto(model))),
       catchError(err => {

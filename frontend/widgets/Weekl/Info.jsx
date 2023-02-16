@@ -1,8 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { currentSnackbar, snackbar } from "../../App";
-import { findUserById, getUserById } from "../../services/users.service";
+import { currentSnackbar } from "../../App";
+import { findUserById } from "../../services/users.service";
 import { capFirstLetter, isSameDay } from "../../utils/utils";
 import { currentProgress } from "./Day";
 
@@ -28,31 +28,32 @@ const days = [
  * @param {*} length the length of the stories in the current weekl
  * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
  */
-const handleProgressBar = (progress, storyToCompare, props, length) => {
-  if (!isNaN(progress) && props.visible && new Date(props.video?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
-    if (props.video?.id === storyToCompare.id)
-      return progress * width / (length * 1.5)
-    if (new Date(props.video?.date).getTime() > new Date(storyToCompare.date).getTime())
-      return width / (length * 1.5)
+const handleProgressBar = (progress, storyToCompare, visible, story, length) => {
+  // console.log('progress', progress, 'storyToCompare', storyToCompare, 'visible', visible, 'story', story, 'length', length);
+  if (!isNaN(progress) && visible && new Date(story?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
+    if (story?.id === storyToCompare.id)
+      return progress * width / (length * 1.5);
+    if (new Date(story?.date).getTime() > new Date(storyToCompare.date).getTime())
+      return width / (length * 1.5);
   }
   return 0;
 }
 
-const WeeklInfo = ({user_id, visible, handleDayClick, stories, currentStory}) => {
+const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentStory }) => {
   const [user, setUser] = useState(undefined);
   const [progress, setProgress] = useState(0);
   const [story, setStory] = useState(undefined);
-  const length = stories.value?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).length;
+  const [stories, setStories] = useState([]);
+  const length = stories?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).length;
 
   useEffect(() => {
-    currentProgress.onProgress().subscribe(progress => setProgress(progress));
     findUserById(user_id).subscribe({
       next: u => setUser(u),
-      error: err => currentSnackbar.set({type: 'ERROR', message: 'User not found'})
+      error: err => currentSnackbar.set({ type: 'ERROR', message: 'User not found' })
     });
-    currentStory.onStory().subscribe(
-      story => setStory(story)
-    )
+    currentStories.onStories().subscribe(setStories);
+    currentStory.onStory().subscribe(setStory);
+    currentProgress.onProgress().subscribe(setProgress);
   }, []);
 
   return (
@@ -62,17 +63,19 @@ const WeeklInfo = ({user_id, visible, handleDayClick, stories, currentStory}) =>
     >
       <Image
         style={styles.picture}
-        source={{uri: user && user.picture !== undefined && user.picture !== ''?user.picture:"https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"}}
+        source={{ uri: user && user.picture !== undefined && user.picture !== '' ? user.picture : "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" }}
         resizeMode='cover'
       />
       <View style={styles.infos}>
         <Text style={styles.username}>@{user?.username}</Text>
         <View style={styles.barContainer}>
-          {stories.value?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
-            <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
-              <View style={{ ...styles.progress, width: handleProgressBar(progress, s, {video: story, user_id, visible, handleDayClick}, length) }}></View>
-            </View>
-          )}
+          {
+            stories.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
+              <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
+                <View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></View>
+              </View>
+            )
+          }
         </View>
         <ScrollView
           style={styles.days}
@@ -83,7 +86,7 @@ const WeeklInfo = ({user_id, visible, handleDayClick, stories, currentStory}) =>
             days.map((d, index) => (
               <View
                 key={index}
-                style={{ ...styles.bubble, backgroundColor: isSameDay(new Date(story?.date), new Date(d.date)) ? 'white' : 'rgba(255,255,255,0.5)' }}
+                style={{ ...styles.bubble, backgroundColor: isSameDay(new Date(story?.date), d.date) ? 'white' : 'rgba(255,255,255,0.5)' }}
                 onTouchEnd={() => { handleDayClick(d) }}
               >
                 <Text>{isSameDay(new Date(story?.date), d.date) ?
@@ -128,8 +131,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold'
   },
-  barContainer: { 
-    flex: 1, 
+  barContainer: {
+    flex: 1,
     flexDirection: 'row',
     marginVertical: 5,
   },

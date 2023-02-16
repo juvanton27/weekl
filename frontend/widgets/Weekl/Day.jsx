@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import { BehaviorSubject } from "rxjs";
 import { pageIndex } from '../../App';
-import { currentIndex, story } from "./Weekl";
+import { currentIndex } from "./Weekl";
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,7 +26,6 @@ const Day = ({ visible, currentStory }) => {
   }
 
   const tempVideoSource = (video) => {
-    console.log(video);
     switch (video) {
       case '../assets/videos/01.mp4': return require('../../assets/videos/01.mp4');
       case '../assets/videos/02.mp4': return require('../../assets/videos/02.mp4');
@@ -42,7 +41,7 @@ const Day = ({ visible, currentStory }) => {
   useEffect(() => {
     currentStory?.onStory().subscribe(
       story => setVideo(tempVideoSource(story?.video))
-    )
+    );
   }, [])
 
   return (

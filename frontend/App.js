@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import { BehaviorSubject, concatMap, delay, from, map, of, timeInterval, timeout } from 'rxjs';
+import { BehaviorSubject, concatMap, from, map } from 'rxjs';
+import Authentication from './pages/Authentication';
 import Conversations from './pages/Conversations';
 import Feed from './pages/Feed';
+import Loading from './pages/Loading';
 import Profil from './pages/Profil';
 import { isLoggedIn } from './services/auth.service';
-import Authentication from './pages/Authentication';
-import Loading from './pages/Loading';
 import SnackBar from './utils/SnackBar';
 
 const { width, height } = Dimensions.get('window');
@@ -37,9 +37,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    currentPageIndex.onPageIndex().subscribe(i => setPage(i));
+    currentPageIndex.onPageIndex().subscribe(setPage);
     // Subscribe to log status change
-    currentIsLogged.onIsLogged().subscribe(i => setLoggedIn(i));
+    currentIsLogged.onIsLogged().subscribe(setLoggedIn);
     // Verify if logged on init
     isLoggedIn().subscribe(i => currentIsLogged.set(i));
     // Error handeling

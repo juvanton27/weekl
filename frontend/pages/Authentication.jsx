@@ -27,35 +27,35 @@ const Authentication = (props) => {
     setIsLoading(true)
     // Champs completion
     if (!username || username === '' || !password || password === '') {
-      currentSnackbar.set({type: 'ERROR', message: 'Username or password empty'});
+      currentSnackbar.set({ type: 'ERROR', message: 'Username or password empty' });
       setIsLoading(false);
     } else {
       // Form as login
       if (status === 0) {
         login(username, password).subscribe({
-          next: () => currentSnackbar.set({type: 'SUCCESS', message: 'Authentication succeeded'}),
+          next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
           error: (err) => {
             resetForm();
-            currentSnackbar.set({type: 'ERROR', message: err.message});
+            currentSnackbar.set({ type: 'ERROR', message: err.message });
           }
         })
-      // Form as register
+        // Form as register
       } else {
         // Form valid
         if (status === 1 && password === passwordConfirmation) {
           signup(username, password).subscribe({
             next: () => {
-              currentSnackbar.set({type: 'SUCCESS', message: 'Registration succeeded\nPlease log in'});
+              currentSnackbar.set({ type: 'SUCCESS', message: 'Registration succeeded\nPlease log in' });
               resetForm();
             },
             error: (err) => {
               resetForm();
-              currentSnackbar.set({type: 'ERROR', message: err.message});
+              currentSnackbar.set({ type: 'ERROR', message: err.message });
             }
           })
-        // Form invalid
+          // Form invalid
         } else {
-          currentSnackbar.set({type: 'ERROR', message: 'Not same passwords'});
+          currentSnackbar.set({ type: 'ERROR', message: 'Not same passwords' });
           setIsLoading(false);
         }
       }

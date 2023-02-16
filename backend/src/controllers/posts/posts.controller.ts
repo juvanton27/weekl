@@ -12,7 +12,7 @@ export class PostsController {
     private readonly postsService: PostsService,
   ) { }
 
-  
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findAllByUserId(@Param('id') id: number): Observable<PostDto[]> {

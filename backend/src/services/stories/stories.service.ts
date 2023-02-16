@@ -27,11 +27,11 @@ export class StoriesService {
 
   findAllUserIds(): Observable<number[]> {
     return from(this.storiesRepository.createQueryBuilder().select('user_id').distinct(true).getRawMany()).pipe(
-      map((ids: {user_id: number}[]) => ids.map(({user_id}) => user_id)),
+      map((ids: { user_id: number }[]) => ids.map(({ user_id }) => user_id)),
     );
   }
 
-  findAllActiveStoriesByUserId(id: number): Observable<Story[]> {    
+  findAllActiveStoriesByUserId(id: number): Observable<Story[]> {
     const sevenDaysAgo: Date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     return from(this.storiesRepository.find({
       where: {

@@ -886,7 +886,7 @@ const conversations = [
 export default conversations;
 
 export function getLastMessageFromConv(id) {
-    if(id===undefined) return undefined;
-    const convs = conversations.find(c=>c.id===id)?.messages
-    return convs[convs.length-1];
+    if (id === undefined) return undefined;
+    const convs = conversations.find(c => c.id === id)?.messages
+    return convs[convs.length - 1];
 }

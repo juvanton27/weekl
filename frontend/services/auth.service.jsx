@@ -19,7 +19,7 @@ export function isLoggedIn() {
       return of({ status: 0 });
     }),
     map(({ status }) => status === 200),
-    catchError(err => throwError(err))
+    catchError(() => of(false))
   );
 }
 
@@ -36,7 +36,7 @@ export function getProfil() {
             Authorization: `Bearer ${token}`,
           }
         }));
-      return of({data: undefined});
+      return of({ data: undefined });
     }),
     map(({ data }) => data),
     catchError(err => throwError(err))

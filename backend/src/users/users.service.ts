@@ -19,7 +19,7 @@ export class UsersService {
   create(username: string, password: string): Observable<User> {
     return this.findOneByUsername(username).pipe(
       concatMap((user: User) => {
-        if(user) throw new MethodNotAllowedException(`User with username ${username} already exists`);
+        if (user) throw new MethodNotAllowedException(`User with username ${username} already exists`);
         return from(bcrypt.hash(password, this.saltOrRounds));
       }),
       concatMap((hash: string) => {

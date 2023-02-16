@@ -5,7 +5,7 @@ import { ActivityIndicator, Dimensions, StyleSheet, View } from "react-native";
 
 library.add(weekl.faWeebly);
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const Loading = () => {
   return (
@@ -18,10 +18,10 @@ const Loading = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width, 
-    height, 
-    flex: 1, 
-    justifyContent: 'center', 
+    width,
+    height,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center'
   }
 })

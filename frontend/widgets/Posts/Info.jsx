@@ -29,13 +29,13 @@ const PostInfo = (props) => {
       </View>
       <View style={styles.right}>
         <Pressable onPress={() => {
-          if(!liked) {
+          if (!liked) {
             new Promise(resolve => resolve(props.anim.fadeIn()))
               .then(setTimeout(() => props.anim.fadeOut(), 750))
           }
           setLiked(!liked);
         }}>
-          <FontAwesomeIcon style={styles.icon} icon={liked?solid_heart.faHeart:inline_heart.faHeart} color={liked?'red':'white'} size={30} />
+          <FontAwesomeIcon style={styles.icon} icon={liked ? solid_heart.faHeart : inline_heart.faHeart} color={liked ? 'red' : 'white'} size={30} />
         </Pressable>
         <Pressable onPress={() => { currentModalVisible.set(true); currentPostComments.set(props.post) }}>
           <FontAwesomeIcon style={styles.icon} icon={inline_comment.faComment} color="white" size={30} />

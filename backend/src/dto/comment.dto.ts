@@ -4,5 +4,5 @@ export interface CommentDto {
   date: Date;
   label: string;
   postId: number;
-  userId: number; 
- }
+  userId: number;
+}

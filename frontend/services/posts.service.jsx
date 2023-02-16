@@ -1,6 +1,6 @@
-import { catchError, concatMap, from, map, throwError } from 'rxjs';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { catchError, concatMap, from, map, throwError } from 'rxjs';
 
 const posts = [
   {
@@ -191,11 +191,11 @@ const url = 'http://localhost:3000/posts'
 export function findAllPostsByUserId(id) {
   return from(AsyncStorage.getItem('token')).pipe(
     concatMap(token => {
-      if(token !== null)
+      if (token !== null)
         return from(axios.get(`${url}/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         }));
-        return of({data: undefined})
+      return of({ data: undefined })
     }),
     map(({ data }) => data),
     catchError(err => throwError(err))
