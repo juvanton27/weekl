@@ -63,7 +63,7 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
     >
       <Image
         style={styles.picture}
-        source={{ uri: user && user.picture !== undefined && user.picture !== '' ? user.picture : "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" }}
+        source={user?.picture ? { uri: user?.picture } : require('../../assets/pictures/default.jpg')}
         resizeMode='cover'
       />
       <View style={styles.infos}>

@@ -17,10 +17,22 @@ export const currentWeeklIndex = {
   onWeeklIndex: () => weeklIndex.asObservable(),
 }
 
+export const userIndex = new BehaviorSubject(undefined);
+export const currentUserIndex = {
+  set: i => userIndex.next(i),
+  onUserIndex: () => userIndex.asObservable()
+}
+
 const Feed = () => {
   const [weeklIndexState, setWeeklIndexState] = useState(0);
-  const [users, setUsers] = useState([]);
+  const [usersState, setUsersState] = useState([]);
   let _feedview = useRef();
+
+  const users = new BehaviorSubject([]);
+  const currentUsers = {
+    set: i => users.next(i),
+    onUsers: () => users.asObservable()
+  }
 
   const scrollToNextWeekl = () => {
     _feedview.current.scrollTo({ y: (weeklIndex.getValue() + 1) * height });
@@ -40,15 +52,20 @@ const Feed = () => {
   }
 
   useEffect(() => {
-    currentWeeklIndex.onWeeklIndex().subscribe(i => {
-      setWeeklIndexState(i);
-    });
     findAllActiveUserIds().subscribe({
-      next: res => setUsers(res),
+      next: res => {
+        currentUsers.set(res);
+        currentUserIndex.set(res[weeklIndexState])
+      },
       error: err => {
         currentSnackbar.set({ type: 'ERROR', message: err.message })
       }
-    })
+    });
+    currentUsers.onUsers().subscribe(setUsersState);
+    currentWeeklIndex.onWeeklIndex().subscribe(i => {
+      setWeeklIndexState(i);
+      currentUserIndex.set(users.getValue()[i]);
+    });
   }, [])
 
   return (
@@ -61,7 +78,7 @@ const Feed = () => {
         showsVerticalScrollIndicator={false}
         onMomentumScrollEnd={onMomentumScrollEnd}
       >
-        {users?.map((id, index) => (
+        {usersState?.map((id, index) => (
           <Weekl key={id} user_id={id} w_index={index} scrollToNextWeekl={scrollToNextWeekl} scrollToPreviousWeekl={scrollToPreviousWeekl} />
         ))}
         <End />

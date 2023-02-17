@@ -4,21 +4,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { concatMap, forkJoin, map } from 'rxjs';
+import { concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
 import { getProfil, logout } from '../services/auth.service';
 import { findAllPostsByUserId } from '../services/posts.service';
-import stories from '../services/stories.service';
-import { findUserById, getUserById } from '../services/users.service';
+import { findUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
-import { currentWeeklIndex } from './Feed';
+import { currentUserIndex } from './Feed';
 
 const { width, height } = Dimensions.get('window');
 
 library.add(inline_logout.faArrowRightFromBracket);
 
-const Profil = (props) => {
+const Profil = ({ own }) => {
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
   const [gridView, setGridView] = useState(false);
@@ -58,13 +57,21 @@ const Profil = (props) => {
   }
 
   useEffect(() => {
-    currentWeeklIndex.onWeeklIndex().subscribe(i =>
-      setUser(getUserById(stories[i]?.id))
-    );
-    if (props.own) {
+    if (own) {
       getProfil().pipe(
         concatMap(({ userId }) => {
           return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) });
+        }),
+        map(({ posts, user }) => {
+          setUser(user);
+          setPosts(posts);
+        }),
+      ).subscribe();
+    } else {
+      currentUserIndex.onUserIndex().pipe(
+        concatMap(userId => {
+          if (!userId) return of({ posts: undefined, users: undefined })
+          return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) })
         }),
         map(({ posts, user }) => {
           setUser(user);
@@ -79,7 +86,7 @@ const Profil = (props) => {
       <ScrollView contentContainerStyle={{ paddingBottom: 85 }} ref={_scrollview}>
         <View style={styles.bio}>
           <View>
-            <Image style={styles.picture} source={{ uri: user?.picture }} />
+            <Image style={styles.picture} source={user?.picture ? { uri: user?.picture } : require('../assets/pictures/default.jpg')} />
             <Text style={styles.username}>@{user?.username}</Text>
           </View>
           <Text style={styles.description}>Ceci est une description{'\n'}Je peux même passer à la ligne</Text>
@@ -99,9 +106,12 @@ const Profil = (props) => {
               <Text style={styles.labels}>Posts</Text>
             </View>
           </View>
-          <Pressable style={styles.logout} onPress={() => onLogoutClick()}>
-            <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
-          </Pressable>
+          {
+            own ?
+              <Pressable style={styles.logout} onPress={() => onLogoutClick()}>
+                <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
+              </Pressable> : ''
+          }
         </View>
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
