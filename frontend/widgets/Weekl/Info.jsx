@@ -29,9 +29,8 @@ const days = [
  * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
  */
 const handleProgressBar = (progress, storyToCompare, visible, story, length) => {
-  // console.log('progress', progress, 'storyToCompare', storyToCompare, 'visible', visible, 'story', story, 'length', length);
   if (!isNaN(progress) && visible && new Date(story?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
-    if (story?.id === storyToCompare.id)
+    if (story?.uid === storyToCompare.uid)
       return progress * width / (length * 1.5);
     if (new Date(story?.date).getTime() > new Date(storyToCompare.date).getTime())
       return width / (length * 1.5);

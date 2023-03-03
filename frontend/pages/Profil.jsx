@@ -2,11 +2,12 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import * as inline_logout from '@fortawesome/free-solid-svg-icons/faArrowRightFromBracket';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { concatMap, forkJoin, map, of } from 'rxjs';
+import { catchError, concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
-import { getProfil, logout } from '../services/auth.service';
+import { auth, logout } from '../firebase';
+import { getProfil } from '../services/auth.service';
 import { findAllPostsByUserId } from '../services/posts.service';
 import { findUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
@@ -24,6 +25,7 @@ const Profil = ({ own }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const _scrollview = useRef();
   const [postCords, setPostCords] = useState([]);
+  const [logginOut, setLoggingOut] = useState(false);
 
   const pinch = Gesture.Pinch().onStart((e) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -51,6 +53,7 @@ const Profil = ({ own }) => {
   }
 
   const onLogoutClick = () => {
+    setLoggingOut(true);
     logout().subscribe({
       next: currentSnackbar.set({ type: 'INFO', message: 'You logged out' })
     })
@@ -58,11 +61,8 @@ const Profil = ({ own }) => {
 
   useEffect(() => {
     if (own) {
-      getProfil().pipe(
-        concatMap(({ userId }) => {
-          return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) });
-        }),
-        map(({ posts, user }) => {
+      forkJoin({ user: getProfil(), posts: findAllPostsByUserId(auth.currentUser.uid) }).pipe(
+        map(({ user, posts }) => {
           setUser(user);
           setPosts(posts);
         }),
@@ -89,14 +89,14 @@ const Profil = ({ own }) => {
             <Image style={styles.picture} source={user?.picture ? { uri: user?.picture } : require('../assets/pictures/default.jpg')} />
             <Text style={styles.username}>@{user?.username}</Text>
           </View>
-          <Text style={styles.description}>Ceci est une description{'\n'}Je peux même passer à la ligne</Text>
+          <Text style={styles.description}>{user?.description}</Text>
           <View style={styles.stats}>
             <View style={styles.follows}>
-              <Text style={styles.numbers}>1000</Text>
+              <Text style={styles.numbers}>{user?.followers}</Text>
               <Text style={styles.labels}>Followers</Text>
             </View>
             <View style={styles.follows}>
-              <Text style={styles.numbers}>100</Text>
+              <Text style={styles.numbers}>{user?.following}</Text>
               <Text style={styles.labels}>Following</Text>
             </View>
             <View style={styles.follows}>
@@ -108,15 +108,17 @@ const Profil = ({ own }) => {
           </View>
           {
             own ?
-              <Pressable style={styles.logout} onPress={() => onLogoutClick()}>
-                <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
-              </Pressable> : ''
+              !logginOut ?
+                <Pressable style={styles.logout} onPress={() => onLogoutClick()}>
+                  <FontAwesomeIcon icon={inline_logout.faArrowRightFromBracket} size={30} />
+                </Pressable> : <ActivityIndicator style={styles.logout} />
+              : ''
           }
         </View>
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
             {posts?.map((post, index) => (
-              <View key={post.id} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
+              <View key={index} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
                 postCords[index] = e.nativeEvent.layout.y + height / 3 - 100;
                 setPostCords(postCords);
               }}>
@@ -136,12 +138,17 @@ const Profil = ({ own }) => {
           </View>
         </GestureDetector>
       </ScrollView>
-      <View style={{ ...styles.button, left: 25 }}>
-        <Button title='Follow' color="black" />
-      </View>
-      <View style={{ ...styles.button, right: 25 }}>
-        <Button title='Message' color="black" />
-      </View>
+      {
+        !own ?
+          <View>
+            <View style={{ ...styles.button, left: 25 }}>
+              <Button title='Follow' color="black" />
+            </View>
+            <View style={{ ...styles.button, right: 25 }}>
+              <Button title='Message' color="black" />
+            </View>
+          </View> : ''
+      }
       <Comments />
     </View>
   )
@@ -169,6 +176,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   description: {
     color: 'grey',

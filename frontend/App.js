@@ -1,25 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { BehaviorSubject, concatMap, from, map } from 'rxjs';
+import { auth } from './firebase';
 import Authentication from './pages/Authentication';
 import Conversations from './pages/Conversations';
 import Feed from './pages/Feed';
 import Loading from './pages/Loading';
 import Profil from './pages/Profil';
-import { isLoggedIn } from './services/auth.service';
 import SnackBar from './utils/SnackBar';
 
 const { width, height } = Dimensions.get('window');
 
-export const pageIndex = new BehaviorSubject(2);
+export const pageIndex = new BehaviorSubject(0);
 const currentPageIndex = {
   set: i => pageIndex.next(i),
   onPageIndex: () => pageIndex.asObservable()
-}
-const isLogged = new BehaviorSubject(undefined);
-export const currentIsLogged = {
-  set: i => isLogged.next(i),
-  onIsLogged: () => isLogged.asObservable()
 }
 
 export const snackbar = new BehaviorSubject({ type: undefined, message: undefined });
@@ -28,8 +23,7 @@ export const currentSnackbar = {
   onSnackbar: () => snackbar.asObservable(),
 }
 export default function App() {
-  const [page, setPage] = useState(2);
-  const [loggedIn, setLoggedIn] = useState(undefined);
+  const [page, setPage] = useState(0);
   const [snackbarState, setSnackbarState] = useState({ type: undefined, message: undefined });
 
   const onMomentumScrollEnd = (e) => {
@@ -38,10 +32,6 @@ export default function App() {
 
   useEffect(() => {
     currentPageIndex.onPageIndex().subscribe(setPage);
-    // Subscribe to log status change
-    currentIsLogged.onIsLogged().subscribe(setLoggedIn);
-    // Verify if logged on init
-    isLoggedIn().subscribe(i => currentIsLogged.set(i));
     // Error handeling
     currentSnackbar.onSnackbar().pipe(
       concatMap(({ type, message }) => from(new Promise(resolve => resolve(setSnackbarState({ type, message }))))),
@@ -53,11 +43,11 @@ export default function App() {
     <View style={styles.container}>
       {
         // Loading screen
-        loggedIn === undefined ?
+        false ?
           <Loading></Loading>
           :
           // Authentication screen
-          loggedIn === false ?
+          !auth.currentUser ?
             <Authentication></Authentication>
             :
             // App screen
@@ -68,6 +58,7 @@ export default function App() {
               horizontal
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={onMomentumScrollEnd}
+              keyboardShouldPersistTaps='always'
             >
               <Conversations />
               <Profil own={true} />
@@ -88,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height,
-    width
+    width,
   },
   snack: {
     position: 'absolute',

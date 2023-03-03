@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { catchError, concatMap, from, map, of, throwError } from "rxjs";
 import { currentIsLogged } from "../App";
+import { auth, db } from "../firebase";
 
 /**
  * Verify if an user is logged
@@ -28,18 +30,10 @@ export function isLoggedIn() {
  * @returns {userId, username}
  */
 export function getProfil() {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get('http://localhost:3000/auth/profil', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        }));
-      return of({ data: undefined });
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("uid", "==", auth.currentUser.uid));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs[0]?.data()),
   );
 }
 

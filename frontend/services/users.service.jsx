@@ -1,9 +1,8 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from 'axios';
-import { catchError, concatMap, from, map, throwError } from "rxjs";
-import conversations from "./conversations";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { from, map } from "rxjs";
+import { db } from "../firebase";
 
-const users = [
+export const users = [
   {
     id: 0,
     username: 'jvantongerlo',
@@ -44,22 +43,23 @@ export function getUserById(id) {
   return users.find(u => u.id === id);
 }
 
-export function getAllConversationsByUserId(id) {
-  return conversations.filter(c => getUserById(id).conversations.includes(c.id));
-}
-
 const url = 'http://localhost:3000/users';
 
 export function findUserById(id) {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get(`${url}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }));
-      else return of({ data: undefined });
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  // return from(AsyncStorage.getItem('token')).pipe(
+  //   concatMap(token => {
+  //     if (token !== null)
+  //       return from(axios.get(`${url}/${id}`, {
+  //         headers: { Authorization: `Bearer ${token}` }
+  //       }));
+  //     else return of({ data: undefined });
+  //   }),
+  //   map(({ data }) => data),
+  //   catchError(err => throwError(err))
+  // )
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("uid", "==", id));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs.map(doc => ({...doc.data(), uid: doc.id}))[0])
   )
 }

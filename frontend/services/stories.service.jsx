@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { catchError, concatMap, from, map, throwError } from 'rxjs';
+import { db } from '../firebase';
 
 const stories = [
   {
@@ -67,30 +69,40 @@ export function getActiveStoriesByUser(id) {
 const url = 'http://localhost:3000/stories'
 
 export function findAllActiveUserIds() {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get(`${url}/users`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }));
-      return of({ data: undefined })
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  // return from(AsyncStorage.getItem('token')).pipe(
+  //   concatMap(token => {
+  //     if (token !== null)
+  //       return from(axios.get(`${url}/users`, {
+  //         headers: { Authorization: `Bearer ${token}` }
+  //       }));
+  //     return of({ data: undefined })
+  //   }),
+  //   map(({ data }) => data),
+  //   catchError(err => throwError(err))
+  // );
+  const storiesRef = collection(db, "stories");
+  const q = query(storiesRef);
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs.map(doc => doc.data().user_id).filter((value, index, array) => array.indexOf(value) === index))
   );
 }
 
 export function findAllActiveStoriesByUserId(id) {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get(`${url}/user/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }));
-      return of({ data: undefined })
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  // return from(AsyncStorage.getItem('token')).pipe(
+  //   concatMap(token => {
+  //     if (token !== null)
+  //       return from(axios.get(`${url}/user/${id}`, {
+  //         headers: { Authorization: `Bearer ${token}` }
+  //       }));
+  //     return of({ data: undefined })
+  //   }),
+  //   map(({ data }) => data),
+  //   catchError(err => throwError(err))
+  // )
+  const storiesRef = collection(db, "stories");
+  const q = query(storiesRef, where("user_id", "==", id), orderBy("date"));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs.map(doc => ({...doc.data(), uid: doc.id})))
   )
 }
 

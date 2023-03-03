@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { currentSnackbar } from "../App";
-import { login, signup } from "../services/auth.service";
+import { logInWithEmailAndPassword, registerWithEmailAndPassword } from "../firebase.js";
 
 const { width, height } = Dimensions.get('window');
 
@@ -16,6 +16,7 @@ const Authentication = (props) => {
   // Define if the form is as login (0) or register (1)
   const [status, setStatus] = useState(0);
   // Form
+  const [email, setEmail] = useState("");
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -26,30 +27,28 @@ const Authentication = (props) => {
   const submit = () => {
     setIsLoading(true)
     // Champs completion
-    if (!username || username === '' || !password || password === '') {
-      currentSnackbar.set({ type: 'ERROR', message: 'Username or password empty' });
+    if (!email || email === '' || !password || password === '' || (status === 1 && !username) || (status === 1 && username === '')) {
+      currentSnackbar.set({ type: 'ERROR', message: status === 1 ? 'Email, username or password empty':'Email or password empty' });
       setIsLoading(false);
     } else {
       // Form as login
       if (status === 0) {
-        login(username, password).subscribe({
-          next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
-          error: (err) => {
-            resetForm();
-            currentSnackbar.set({ type: 'ERROR', message: err.message });
-          }
-        })
+        logInWithEmailAndPassword(email, password).subscribe({
+            next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
+            error: (err) => {
+              resetForm();
+              currentSnackbar.set({ type: 'ERROR', message: err.message });
+            }
+          });
         // Form as register
       } else {
         // Form valid
         if (status === 1 && password === passwordConfirmation) {
-          signup(username, password).subscribe({
+          registerWithEmailAndPassword(username, email, password).subscribe({
             next: () => {
-              currentSnackbar.set({ type: 'SUCCESS', message: 'Registration succeeded\nPlease log in' });
-              resetForm();
+              currentSnackbar.set({ type: 'SUCCESS', message: 'Registration succeeded' });
             },
             error: (err) => {
-              resetForm();
               currentSnackbar.set({ type: 'ERROR', message: err.message });
             }
           })
@@ -64,6 +63,7 @@ const Authentication = (props) => {
 
   const resetForm = () => {
     // Reset form after registration
+    setEmail('');
     setUserName('');
     setPassword('');
     setPasswordConfirmation('');
@@ -84,9 +84,15 @@ const Authentication = (props) => {
         }
       </Text>
       <Text style={styles.subtitle}>{status === 0 ? 'Access to' : 'Create'} your account</Text>
-      <TextInput style={styles.input} onChangeText={setUserName}
-        value={username} placeholder='Enter your username'
+      <TextInput style={styles.input} onChangeText={setEmail}
+        value={email} placeholder='Enter your email'
       />
+      {
+        status === 1 ? 
+        <TextInput style={styles.input} onChangeText={setUserName}
+          value={username} placeholder='Enter your username'
+        /> : ''
+      }
       <View>
         <TextInput style={styles.input} onChangeText={setPassword}
           value={password} placeholder='Enter your password' secureTextEntry={hiddenPassword}
