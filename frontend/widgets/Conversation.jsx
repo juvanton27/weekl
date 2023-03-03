@@ -24,7 +24,7 @@ const Conversation = ({ }) => {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
 
-  function send(e) {
+  function send() {
     if (currentMessage && currentMessage != '') {
       const message = {
         content: currentMessage,

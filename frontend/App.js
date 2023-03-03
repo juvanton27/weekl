@@ -1,3 +1,4 @@
+import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { BehaviorSubject, concatMap, from, map } from 'rxjs';
@@ -23,6 +24,7 @@ export const currentSnackbar = {
   onSnackbar: () => snackbar.asObservable(),
 }
 export default function App() {
+  const [onStart, setOnStart] = useState(true);
   const [page, setPage] = useState(0);
   const [snackbarState, setSnackbarState] = useState({ type: undefined, message: undefined });
 
@@ -31,6 +33,9 @@ export default function App() {
   }
 
   useEffect(() => {
+    if(onStart) {
+      setTimeout(() => setOnStart(false), 2000);
+    }
     currentPageIndex.onPageIndex().subscribe(setPage);
     // Error handeling
     currentSnackbar.onSnackbar().pipe(
@@ -42,10 +47,8 @@ export default function App() {
   return (
     <View style={styles.container}>
       {
-        // Loading screen
-        false ?
-          <Loading></Loading>
-          :
+        onStart && !auth.currentUser ?
+          <Loading /> :
           // Authentication screen
           !auth.currentUser ?
             <Authentication></Authentication>
