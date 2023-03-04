@@ -1,7 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { catchError, concatMap, from, map, throwError } from 'rxjs';
+import { from, map } from 'rxjs';
 import { db } from '../firebase';
 
 const posts = [
@@ -177,19 +175,16 @@ const posts = [
   },
 ];
 
-export function getPostsByUser(id) {
-  if (id === undefined) return undefined;
-  return posts.find(s => s.id === id).posts;
-}
-
 export function getCommentsByPost(id) {
   if (id === undefined) return undefined;
   return posts.reduce((p, c) => p.concat(c.posts), []).find(p => p.id === id).comments ?? [];
 }
 
-
-const url = 'http://localhost:3000/posts'
-
+/**
+ * Gets all posts by user id
+ * @param {*} id the id of the user
+ * @returns a posts array
+ */
 export function findAllPostsByUserId(id) {
   const postsRef = collection(db, "posts");
   const q = query(postsRef, where("user_id", "==", id));

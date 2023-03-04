@@ -1,9 +1,9 @@
 import { library } from "@fortawesome/fontawesome-svg-core";
 import * as paperPlane from '@fortawesome/free-regular-svg-icons/faPaperPlane';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { collection, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
+import { Dimensions, Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BehaviorSubject, concatMap } from "rxjs";
 import { currentSnackbar } from "../App";
 import { auth, db } from "../firebase";
@@ -18,6 +18,12 @@ export const currentConversation = {
   set: conv => conversationObs.next(conv),
   onConversation: () => conversationObs.asObservable()
 }
+
+/**
+ * Component as modal that display a conversation between two users
+ * @param {*} 
+ * @returns 
+ */
 const Conversation = ({ }) => {
   const ref = useRef();
   const [conv, setConv] = useState(undefined);

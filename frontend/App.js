@@ -1,4 +1,3 @@
-import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { BehaviorSubject, concatMap, from, map } from 'rxjs';
@@ -6,8 +5,8 @@ import { auth } from './firebase';
 import Authentication from './pages/Authentication';
 import Conversations from './pages/Conversations';
 import Feed from './pages/Feed';
-import Loading from './pages/Loading';
 import Profil from './pages/Profil';
+import Loading from './utils/Loading';
 import SnackBar from './utils/SnackBar';
 
 const { width, height } = Dimensions.get('window');
@@ -23,6 +22,13 @@ export const currentSnackbar = {
   set: ({ type, message }) => snackbar.next({ type, message }),
   onSnackbar: () => snackbar.asObservable(),
 }
+
+/**
+ * This component will first display a loading screen
+ * If the user isn't logged it redirect to the authentication screen
+ * If the user is logged it redirect the user to it's feed
+ * @returns 
+ */
 export default function App() {
   const [onStart, setOnStart] = useState(true);
   const [page, setPage] = useState(2);
@@ -33,7 +39,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if(onStart) {
+    if (onStart) {
       setTimeout(() => setOnStart(false), 2000);
     }
     currentPageIndex.onPageIndex().subscribe(setPage);

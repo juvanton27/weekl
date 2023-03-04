@@ -23,6 +23,11 @@ export const currentUserIndex = {
   onUserIndex: () => userIndex.asObservable()
 }
 
+/**
+ * Page that displays the main content of the application,
+ * the feed of all the weekl
+ * @returns 
+ */
 const Feed = () => {
   const [weeklIndexState, setWeeklIndexState] = useState(0);
   const [usersState, setUsersState] = useState([]);

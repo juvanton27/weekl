@@ -6,7 +6,6 @@ import React, { useEffect, useState } from "react";
 import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BehaviorSubject } from "rxjs";
 import { getCommentsByPost } from "../../services/posts.service";
-import { getUserById } from "../../services/users.service";
 
 library.add(solid_xmark.faXmark);
 
@@ -22,7 +21,12 @@ export const currentPostComments = {
   set: (post) => postComments.next(post),
   onPostComments: () => postComments.asObservable(),
 }
-const Comments = (props) => {
+
+/**
+ * Component as a modal to display all the comments of a post 
+ * @returns 
+ */
+const Comments = ({}) => {
   const [visible, setVisible] = useState(false);
   const [post, setPost] = useState(undefined);
 
@@ -54,9 +58,9 @@ const Comments = (props) => {
       <ScrollView style={styles.content}>
         {getCommentsByPost(post?.id)?.map(comment => (
           <View key={comment.id} style={styles.comment}>
-            <Image style={styles.picture} source={{ uri: getUserById(comment.user_id).picture }} />
+            <Image style={styles.picture} source={{ uri: '' }} />
             <View style={styles.text}>
-              <Text style={styles.username}>@{getUserById(comment.user_id).username}</Text>
+              <Text style={styles.username}>@</Text>
               <Text style={styles.commentContent}>{comment.comment}</Text>
             </View>
           </View>

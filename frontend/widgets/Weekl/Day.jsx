@@ -13,6 +13,12 @@ export const currentProgress = {
   onProgress: () => progress.asObservable(),
 }
 
+/**
+ * Component that contains the video of the weekl to display
+ * @param {*} visible if the day is currently visible on screen
+ * @param {*} currentStory the informations of the current story
+ * @returns 
+ */
 const Day = ({ visible, currentStory }) => {
   const ref = useRef();
   const [video, setVideo] = useState(undefined);

@@ -7,6 +7,10 @@ import Conversation, { currentConversation } from "../widgets/Conversation";
 
 const { width, height } = Dimensions.get('window');
 
+/**
+ * Page that displays all the conversations of the logged user
+ * @returns 
+ */
 const Conversations = ({ }) => {
   const [conversations, setConversations] = useState([]);
 

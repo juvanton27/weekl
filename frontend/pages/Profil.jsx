@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { catchError, concatMap, forkJoin, map, of } from 'rxjs';
+import { concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
 import { auth, logout } from '../firebase';
 import { getProfil } from '../services/auth.service';
@@ -18,6 +18,13 @@ const { width, height } = Dimensions.get('window');
 
 library.add(inline_logout.faArrowRightFromBracket);
 
+/**
+ * Page that displays the logged user informations or a non logged user informations
+ * The actions are varying depending on the user own the profil (typically consulting his profil page)
+ * or if it's consulting another user's page 
+ * @param {*} own if the user own the profil
+ * @returns 
+ */
 const Profil = ({ own }) => {
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);

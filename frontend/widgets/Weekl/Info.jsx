@@ -38,6 +38,16 @@ const handleProgressBar = (progress, storyToCompare, visible, story, length) => 
   return 0;
 }
 
+/**
+ * Component that contains all the informations of a weekl
+ * such as the user, the progress of the video, the number of video, etc.
+ * @param {*} user_id the id of the user
+ * @param {*} visible if the weekl is visible on screen
+ * @param {*} handleDayClick function the handle a day click by the user (parent function)
+ * @param {*} currentStories the current stories that contains the weekl
+ * @param {*} currentStory the current story that is currently playing in the weekl
+ * @returns 
+ */
 const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentStory }) => {
   const [user, setUser] = useState(undefined);
   const [progress, setProgress] = useState(0);
@@ -48,7 +58,7 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
   useEffect(() => {
     findUserById(user_id).subscribe({
       next: u => setUser(u),
-      error: err => currentSnackbar.set({ type: 'ERROR', message: 'User not found' })
+      error: () => currentSnackbar.set({ type: 'ERROR', message: 'User not found' })
     });
     currentStories.onStories().subscribe(setStories);
     currentStory.onStory().subscribe(setStory);

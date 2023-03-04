@@ -12,7 +12,11 @@ const { width, height } = Dimensions.get('window');
 
 library.add(eye_slash.faEyeSlash, eye.faEye);
 
-const Authentication = (props) => {
+/**
+ * Page that display the login and register form
+ * @returns 
+ */
+const Authentication = ({ }) => {
   // Define if the form is as login (0) or register (1)
   const [status, setStatus] = useState(0);
   // Form
@@ -28,18 +32,18 @@ const Authentication = (props) => {
     setIsLoading(true)
     // Champs completion
     if (!email || email === '' || !password || password === '' || (status === 1 && !username) || (status === 1 && username === '')) {
-      currentSnackbar.set({ type: 'ERROR', message: status === 1 ? 'Email, username or password empty':'Email or password empty' });
+      currentSnackbar.set({ type: 'ERROR', message: status === 1 ? 'Email, username or password empty' : 'Email or password empty' });
       setIsLoading(false);
     } else {
       // Form as login
       if (status === 0) {
         logInWithEmailAndPassword(email, password).subscribe({
-            next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
-            error: (err) => {
-              resetForm();
-              currentSnackbar.set({ type: 'ERROR', message: err.message });
-            }
-          });
+          next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
+          error: (err) => {
+            resetForm();
+            currentSnackbar.set({ type: 'ERROR', message: err.message });
+          }
+        });
         // Form as register
       } else {
         // Form valid
@@ -88,10 +92,10 @@ const Authentication = (props) => {
         value={email} placeholder='Enter your email'
       />
       {
-        status === 1 ? 
-        <TextInput style={styles.input} onChangeText={setUserName}
-          value={username} placeholder='Enter your username'
-        /> : ''
+        status === 1 ?
+          <TextInput style={styles.input} onChangeText={setUserName}
+            value={username} placeholder='Enter your username'
+          /> : ''
       }
       <View>
         <TextInput style={styles.input} onChangeText={setPassword}

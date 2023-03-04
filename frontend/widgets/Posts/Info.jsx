@@ -12,6 +12,14 @@ const { width, height } = Dimensions.get('window');
 
 library.add(inline_comment.faComment, solid_heart.faHeart, inline_heart.faHeart);
 
+/**
+ * Component on a post that contains all the posts info
+ * as the owner, the location and the action buttons
+ * @param {*} user the owner of the post
+ * @param {*} anim the animation when we resize the grid of posts
+ * @param {*} post the post
+ * @returns 
+ */
 const PostInfo = ({ user, anim, post }) => {
   const [liked, setLiked] = useState(false);
 
