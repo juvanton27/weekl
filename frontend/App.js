@@ -12,7 +12,7 @@ import SnackBar from './utils/SnackBar';
 
 const { width, height } = Dimensions.get('window');
 
-export const pageIndex = new BehaviorSubject(0);
+export const pageIndex = new BehaviorSubject(2);
 const currentPageIndex = {
   set: i => pageIndex.next(i),
   onPageIndex: () => pageIndex.asObservable()
@@ -25,7 +25,7 @@ export const currentSnackbar = {
 }
 export default function App() {
   const [onStart, setOnStart] = useState(true);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(2);
   const [snackbarState, setSnackbarState] = useState({ type: undefined, message: undefined });
 
   const onMomentumScrollEnd = (e) => {

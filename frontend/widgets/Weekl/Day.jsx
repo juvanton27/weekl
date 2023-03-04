@@ -27,8 +27,7 @@ const Day = ({ visible, currentStory }) => {
 
   useEffect(() => {
     currentStory?.onStory().subscribe(
-      story => setVideo(story?.video)
-    );
+      story => setVideo(story?.video));
   }, [])
 
   return (
