@@ -22,14 +22,14 @@
     "@react-navigation/native-stack": "^6.9.12",
     "axios": "^0.24.0",
     "expo": "~47.0.3",
-    "expo-av": "~13.0.1",
+    "expo-av": "~13.0.3",
     "expo-linear-gradient": "~12.0.1",
     "expo-status-bar": "~1.4.2",
     "firebase": "^9.17.1",
     "react": "18.1.0",
     "react-native": "0.70.5",
     "react-native-gesture-handler": "~2.8.0",
-    "react-native-svg": "^13.6.0",
+    "react-native-svg": "13.4.0",
     "rxjs": "^7.5.7"
   },
   "devDependencies": {

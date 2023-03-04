@@ -25,22 +25,9 @@ const Day = ({ visible, currentStory }) => {
     }
   }
 
-  const tempVideoSource = (video) => {
-    switch (video) {
-      case '../assets/videos/01.mp4': return require('../../assets/videos/01.mp4');
-      case '../assets/videos/02.mp4': return require('../../assets/videos/02.mp4');
-      case '../assets/videos/03.mp4': return require('../../assets/videos/03.mp4');
-      case '../assets/videos/04.mp4': return require('../../assets/videos/04.mp4');
-      case '../assets/videos/05.mp4': return require('../../assets/videos/05.mp4');
-      case '../assets/videos/06.mp4': return require('../../assets/videos/06.mp4');
-      case '../assets/videos/07.mp4': return require('../../assets/videos/07.mp4');
-      default: return require('../../assets/videos/01.mp4');
-    }
-  }
-
   useEffect(() => {
     currentStory?.onStory().subscribe(
-      story => setVideo(tempVideoSource(story?.video))
+      story => setVideo(story?.video)
     );
   }, [])
 
@@ -51,7 +38,7 @@ const Day = ({ visible, currentStory }) => {
       rate={1.0}
       volume={1.0}
       isMuted={false}
-      source={video}
+      source={{uri: video}}
       resizeMode='cover'
       shouldPlay={visible && pageIndex.getValue() === 2}
       positionMillis={0}
