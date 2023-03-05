@@ -1,5 +1,5 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { from, map } from "rxjs";
+import { from, map, of } from "rxjs";
 import { db } from "../firebase";
 
 /**
@@ -8,9 +8,10 @@ import { db } from "../firebase";
  * @returns a user
  */
 export function findUserById(id) {
+  if (!id) return of(undefined);
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", id));
   return from(getDocs(q)).pipe(
-    map(querySnapshot => querySnapshot.docs.map(doc => ({...doc.data(), uid: doc.id}))[0])
+    map(querySnapshot => querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }))[0])
   )
 }
