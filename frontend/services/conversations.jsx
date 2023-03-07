@@ -1,6 +1,7 @@
-import { addDoc, collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { forkJoin, from, map, of } from "rxjs";
+import { addDoc, collection, doc, getDoc, getDocs, limit, orderBy, query, updateDoc, where } from "firebase/firestore";
+import { concatMap, forkJoin, from, map, of } from "rxjs";
 import { db } from "../firebase";
+import { findUserById } from "./users.service";
 
 /**
  * Gets all conversations by user id
@@ -12,7 +13,22 @@ export function findAllConversationsByUserId(id) {
   const q1 = query(conversationsRef, where("user_1_id", "==", id));
   const q2 = query(conversationsRef, where("user_2_id", "==", id));
   return forkJoin({ q1: from(getDocs(q1)), q2: from(getDocs(q2)) }).pipe(
-    map(({ q1, q2 }) => q1.docs.map(doc => ({ ...doc.data(), uid: doc.id, conv_dest: 2 })).concat(q2.docs.map(doc => ({ ...doc.data(), uid: doc.id, conv_dest: 1 })))),
+    concatMap(({ q1, q2 }) => {
+      const first = q1.docs.map(doc => ({...doc.data(), uid: doc.id}));
+      const second = q2.docs.map(doc => ({...doc.data(), uid: doc.id}));
+      const result = first.map(conversation => ({
+        uid: conversation.uid,
+        last_message: conversation.last_message,
+        user_id: conversation.user_2_id,
+      })).concat(second.map(conversation => ({
+        uid: conversation.uid,
+        last_message: conversation.last_message,
+        user_id: conversation.user_1_id,
+      })));
+      return of(result);
+    }),
+    concatMap(conversations => conversations.length > 0 ? forkJoin(conversations.map(conversation => (forkJoin({conversation: of(conversation), user: findUserById(conversation.user_id)})))) : of([])),
+    map(conversationsUser => conversationsUser.map(({conversation, user}) => ({...conversation, username: user.username, picture: user.picture})))
   )
 }
 
@@ -37,4 +53,14 @@ export function findAllMessageByConversationId(id) {
 export function sendMessage(message) {
   const messagesRef = collection(db, "messages");
   return from(addDoc(messagesRef, message));
+}
+
+/**
+ *  Updates the last message of the conversation
+ * @param {*} id the id of the conversation
+ * @returns 
+ */
+export function updateLastMessageByConversationId(id, message) {
+  const conversationDoc = doc(db, "conversations", id);
+  return from(updateDoc(conversationDoc, {last_message: message}))
 }

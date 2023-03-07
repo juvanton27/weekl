@@ -4,10 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { BehaviorSubject, concatMap } from "rxjs";
+import { BehaviorSubject, catchError, concatMap, map } from "rxjs";
 import { currentSnackbar } from "../App";
 import { auth, db } from "../firebase";
-import { findAllMessageByConversationId, sendMessage } from "../services/conversations";
+import { currentLastMessageUpdate } from "../pages/Conversations";
+import { findAllMessageByConversationId, sendMessage, updateLastMessageByConversationId } from "../services/conversations";
 
 const { width, height } = Dimensions.get('window')
 
@@ -38,10 +39,13 @@ const Conversation = ({ }) => {
         timestamp: new Date().toISOString(),
         user_id: auth.currentUser.uid
       }
-      sendMessage(message).subscribe(
-        () => setCurrentMessage(''),
-        err => currentSnackbar.set({ type: 'ERROR', message: err.message })
-      )
+      sendMessage(message).pipe(
+        map(() => setCurrentMessage('')),
+        map(() => updateLastMessageByConversationId(message.conversation_id, message.content)),
+      ).subscribe({
+        next: () => currentLastMessageUpdate.set({id: message.conversation_id, message: message.content}),
+        error:  err => currentSnackbar.set({ type: 'ERROR', message: err.message })
+      });
     }
   }
 
@@ -75,8 +79,8 @@ const Conversation = ({ }) => {
         <View style={styles.content}>
           <View style={styles.conversation}>
             <View style={styles.titleContainer}>
-              <Image style={styles.picture} source={{ uri: conv?.conv_dest === 2 ? (conv?.user_2_picture ?? require('../assets/pictures/default.jpg')) : conv?.user_1_picture ?? require('../assets/pictures/default.jpg') }}></Image>
-              <Text style={styles.title}>@{conv?.conv_dest === 2 ? conv?.user_2_username : conv?.user_1_username}</Text>
+              <Image style={styles.picture} source={{ uri: conv?.picture ?? require('../assets/pictures/default.jpg') }}></Image>
+              <Text style={styles.title}>@{conv?.username}</Text>
             </View>
             <ScrollView
               ref={ref}

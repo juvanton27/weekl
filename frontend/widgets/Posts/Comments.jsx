@@ -4,9 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BehaviorSubject, concatMap, forkJoin, of } from "rxjs";
+import { BehaviorSubject, concatMap } from "rxjs";
 import { findAllCommentsByPostId } from "../../services/posts.service";
-import { findUserById } from '../../services/users.service';
 
 library.add(solid_xmark.faXmark);
 
@@ -35,8 +34,7 @@ const Comments = ({}) => {
     currentModalVisible.onModalVisible().subscribe(setVisible);
     currentPostComments.onPostComments().pipe(
       concatMap(post => findAllCommentsByPostId(post?.uid)),
-      concatMap(comments => comments.length > 0 ? forkJoin(comments.map(comment => (forkJoin({comment: of(comment), user: findUserById(comment.user_id)})))): of([]))
-    ).subscribe(commentsUser => setComments(commentsUser.map(({comment, user}) => ({...comment, username: user.username, picture: user.picture}))));
+    ).subscribe(setComments);
   }, []);
 
   return (
