@@ -4,38 +4,76 @@ import * as eye_slash from '@fortawesome/free-regular-svg-icons/faEyeSlash';
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { login, signup } from "../services/auth.service";
+import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { currentSnackbar } from "../App";
+import { logInWithEmailAndPassword, registerWithEmailAndPassword } from "../firebase.js";
 
 const { width, height } = Dimensions.get('window');
 
 library.add(eye_slash.faEyeSlash, eye.faEye);
 
-const Authentication = (props) => {
+/**
+ * Page that display the login and register form
+ * @returns 
+ */
+const Authentication = ({ }) => {
   // Define if the form is as login (0) or register (1)
   const [status, setStatus] = useState(0);
+  // Form
+  const [email, setEmail] = useState("");
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [hiddenPassword, setHiddenPassword] = useState(true);
+  // Loading
+  const [isLoading, setIsLoading] = useState(false);
 
   const submit = () => {
-    if (status === 0) {
-      login(username, password).subscribe()
+    setIsLoading(true)
+    // Champs completion
+    if (!email || email === '' || !password || password === '' || (status === 1 && !username) || (status === 1 && username === '')) {
+      currentSnackbar.set({ type: 'ERROR', message: status === 1 ? 'Email, username or password empty' : 'Email or password empty' });
+      setIsLoading(false);
     } else {
-      if (status === 1 && password === passwordConfirmation) {
-        signup(username, password).subscribe(() => {
-          // Reset form after registration
-          setUserName('');
-          setPassword('');
-          setPasswordConfirmation('');
-          setHiddenPassword(true);
-          setStatus(0);
-        })
+      // Form as login
+      if (status === 0) {
+        logInWithEmailAndPassword(email, password).subscribe({
+          next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
+          error: (err) => {
+            resetForm();
+            currentSnackbar.set({ type: 'ERROR', message: err.message });
+          }
+        });
+        // Form as register
       } else {
-        console.warn('Not same passwords')
+        // Form valid
+        if (status === 1 && password === passwordConfirmation) {
+          registerWithEmailAndPassword(username, email, password).subscribe({
+            next: () => {
+              currentSnackbar.set({ type: 'SUCCESS', message: 'Registration succeeded' });
+            },
+            error: (err) => {
+              currentSnackbar.set({ type: 'ERROR', message: err.message });
+            }
+          })
+          // Form invalid
+        } else {
+          currentSnackbar.set({ type: 'ERROR', message: 'Not same passwords' });
+          setIsLoading(false);
+        }
       }
     }
+  }
+
+  const resetForm = () => {
+    // Reset form after registration
+    setEmail('');
+    setUserName('');
+    setPassword('');
+    setPasswordConfirmation('');
+    setHiddenPassword(true);
+    setStatus(0);
+    setIsLoading(false);
   }
 
   return (
@@ -50,9 +88,15 @@ const Authentication = (props) => {
         }
       </Text>
       <Text style={styles.subtitle}>{status === 0 ? 'Access to' : 'Create'} your account</Text>
-      <TextInput style={styles.input} onChangeText={setUserName}
-        value={username} placeholder='Enter your username'
+      <TextInput style={styles.input} onChangeText={setEmail}
+        value={email} placeholder='Enter your email'
       />
+      {
+        status === 1 ?
+          <TextInput style={styles.input} onChangeText={setUserName}
+            value={username} placeholder='Enter your username'
+          /> : ''
+      }
       <View>
         <TextInput style={styles.input} onChangeText={setPassword}
           value={password} placeholder='Enter your password' secureTextEntry={hiddenPassword}
@@ -69,11 +113,16 @@ const Authentication = (props) => {
           : ''
       }
       <Pressable style={styles.button} onPress={() => submit()}>
-        <Text style={{ color: 'white', fontSize: 20 }}>
-          {
-            status === 0 ? 'Login' : 'Signup'
-          }
-        </Text>
+        {
+          isLoading ?
+            <ActivityIndicator />
+            :
+            <Text style={{ color: 'white', fontSize: 20 }}>
+              {
+                status === 0 ? 'Login' : 'Signup'
+              }
+            </Text>
+        }
       </Pressable>
       <Text style={styles.subtitle} onPress={() => setStatus(status === 0 ? 1 : 0)}>
         {

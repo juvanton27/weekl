@@ -4,8 +4,11 @@ import { Dimensions, StyleSheet, Text, View } from "react-native";
 
 const { width, height } = Dimensions.get('window');
 
-
-const End = (props) => {
+/**
+ * Compoenent that is displayed at the end of the feed
+ * @returns 
+ */
+const End = ({}) => {
 
   return (
     <View style={styles.container}>

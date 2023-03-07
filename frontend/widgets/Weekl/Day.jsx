@@ -1,5 +1,5 @@
 import { Video } from 'expo-av';
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import { BehaviorSubject } from "rxjs";
 import { pageIndex } from '../../App';
@@ -13,8 +13,15 @@ export const currentProgress = {
   onProgress: () => progress.asObservable(),
 }
 
-const Day = (props) => {
+/**
+ * Component that contains the video of the weekl to display
+ * @param {*} visible if the day is currently visible on screen
+ * @param {*} currentStory the informations of the current story
+ * @returns 
+ */
+const Day = ({ visible, currentStory }) => {
   const ref = useRef();
+  const [video, setVideo] = useState(undefined);
 
   const onPlaybackStatusUpdate = (e) => {
     if (e.didJustFinish) {
@@ -24,6 +31,11 @@ const Day = (props) => {
     }
   }
 
+  useEffect(() => {
+    currentStory?.onStory().subscribe(
+      story => setVideo(story?.video));
+  }, [])
+
   return (
     <Video
       ref={ref}
@@ -31,9 +43,9 @@ const Day = (props) => {
       rate={1.0}
       volume={1.0}
       isMuted={false}
-      source={props.video?.video}
+      source={{uri: video}}
       resizeMode='cover'
-      shouldPlay={props.visible && pageIndex.getValue()===2}
+      shouldPlay={visible && pageIndex.getValue() === 2}
       positionMillis={0}
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}

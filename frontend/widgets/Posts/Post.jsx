@@ -1,15 +1,22 @@
-import React, { useRef, useState } from "react";
-import { Animated, Dimensions, Image, StyleSheet, Text, View } from "react-native";
-import PostInfo from "./Info";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import React, { useRef } from "react";
+import { Animated, Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import PostInfo from "./Info";
 
 const { width, height } = Dimensions.get('window');
 
 library.add(solid_heart.faHeart);
 
-const Post = (props) => {
+/**
+ * Component that display a picture shared by a user
+ * @param {*} displayInfo boolean if the info are displayed or not 
+ * @param {*} post the post informations
+ * @param {*} user the user informations
+ * @returns 
+ */
+const Post = ({displayInfo, post, user}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const fadeIn = () => {
@@ -19,7 +26,7 @@ const Post = (props) => {
       useNativeDriver: false
     }).start();
   };
-  
+
   const fadeOut = () => {
     Animated.timing(fadeAnim, {
       toValue: 0,
@@ -31,16 +38,16 @@ const Post = (props) => {
   return (
     <View style={styles.container}>
       <Image
-        style={{ ...styles.post, borderRadius: props.displayInfo ? 10 : 20, width: props.displayInfo ? '95%' : '90%' }}
-        source={{ uri: props.post.post }}
+        style={{ ...styles.post, borderRadius: displayInfo ? 10 : 20, width: displayInfo ? '95%' : '90%' }}
+        source={{ uri: post.picture }}
         resizeMode='cover'
       />
-      <Animated.View style={{...styles.like, opacity: fadeAnim}}>
+      <Animated.View style={{ ...styles.like, opacity: fadeAnim }}>
         <FontAwesomeIcon style={styles.heart} icon={solid_heart.faHeart} size={150} />
         <Text style={styles.count}>5K</Text>
       </Animated.View>
-      <Animated.View style={{ display: props.displayInfo?'none':'flex', width: '90%' }}>
-        <PostInfo user={props.user} post={props.post} anim={{fadeIn, fadeOut}} />
+      <Animated.View style={{ display: displayInfo ? 'none' : 'flex', width: '90%' }}>
+        <PostInfo user={user} post={post} anim={{ fadeIn, fadeOut }} />
       </Animated.View>
     </View>
   )

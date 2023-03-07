@@ -12,7 +12,15 @@ const { width, height } = Dimensions.get('window');
 
 library.add(inline_comment.faComment, solid_heart.faHeart, inline_heart.faHeart);
 
-const PostInfo = (props) => {
+/**
+ * Component on a post that contains all the posts info
+ * as the owner, the location and the action buttons
+ * @param {*} user the owner of the post
+ * @param {*} anim the animation when we resize the grid of posts
+ * @param {*} post the post
+ * @returns 
+ */
+const PostInfo = ({ user, anim, post }) => {
   const [liked, setLiked] = useState(false);
 
   return (
@@ -21,23 +29,23 @@ const PostInfo = (props) => {
       colors={['transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
     >
       <View style={styles.left}>
-        <Image style={styles.picture} source={{ uri: props.user.picture }} resizeMode='cover' />
+        <Image style={styles.picture} source={user?.picture ? { uri: user?.picture } : require('../../assets/pictures/default.jpg')} resizeMode='cover' />
       </View>
       <View style={styles.mid}>
-        <Text style={styles.username}>@{props.user.username}</Text>
+        <Text style={styles.username}>@{user?.username}</Text>
         <Text style={styles.location}>Avenue de QuelquePart</Text>
       </View>
       <View style={styles.right}>
         <Pressable onPress={() => {
-          if(!liked) {
-            new Promise(resolve => resolve(props.anim.fadeIn()))
-              .then(setTimeout(() => props.anim.fadeOut(), 750))
+          if (!liked) {
+            new Promise(resolve => resolve(anim.fadeIn()))
+              .then(setTimeout(() => anim.fadeOut(), 750))
           }
           setLiked(!liked);
         }}>
-          <FontAwesomeIcon style={styles.icon} icon={liked?solid_heart.faHeart:inline_heart.faHeart} color={liked?'red':'white'} size={30} />
+          <FontAwesomeIcon style={styles.icon} icon={liked ? solid_heart.faHeart : inline_heart.faHeart} color={liked ? 'red' : 'white'} size={30} />
         </Pressable>
-        <Pressable onPress={() => { currentModalVisible.set(true); currentPostComments.set(props.post) }}>
+        <Pressable onPress={() => { currentModalVisible.set(true); currentPostComments.set(post) }}>
           <FontAwesomeIcon style={styles.icon} icon={inline_comment.faComment} color="white" size={30} />
         </Pressable>
       </View>

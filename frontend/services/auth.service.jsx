@@ -1,49 +1,15 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from 'axios';
-import { catchError, concatMap, from, map, of, throwError } from "rxjs";
-import { currentIsLogged } from "../App";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { from, map } from "rxjs";
+import { auth, db } from "../firebase";
 
-export function isLoggedIn() {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get('http://localhost:3000/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        }));
-      return of({ status: 0 });
-    }),
-    map(({ status }) => status === 200),
-    catchError(err => console.warn(err.message))
-  );
-}
-
-export function login(username, password) {
-  return from(axios.post('http://localhost:3000/auth/login', { username, password })).pipe(
-    map(({ data }) => from(AsyncStorage.setItem('token', data?.access_token))),
-    concatMap(() => isLoggedIn()),
-    map(bool => currentIsLogged.set(bool)),
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    })
-  );
-}
-
-export function logout() {
-  return from(AsyncStorage.removeItem('token')).pipe(
-    concatMap(() => isLoggedIn()),
-    map(bool => currentIsLogged.set(bool)),
-    catchError(err => console.warn(err.message)),
-  );
-}
-
-export function signup(username, password) {
-  return from(axios.post('http://localhost:3000/auth/register', { username, password })).pipe(
-    catchError(err => {
-      console.warn(err.message);
-      return throwError(err);
-    }),
+/**
+ * Gets logged user informations
+ * @returns a user
+ */
+export function getProfil() {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("uid", "==", auth.currentUser.uid));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs[0]?.data()),
   );
 }

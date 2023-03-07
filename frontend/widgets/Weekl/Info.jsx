@@ -1,7 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { getUserById } from "../../services/users.service";
+import { currentSnackbar } from "../../App";
+import { findUserById } from "../../services/users.service";
 import { capFirstLetter, isSameDay } from "../../utils/utils";
 import { currentProgress } from "./Day";
 
@@ -27,23 +28,41 @@ const days = [
  * @param {*} length the length of the stories in the current weekl
  * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
  */
-const handleProgressBar = (progress, storyToCompare, props, length) => {
-  if (!isNaN(progress) && props.visible && props.video?.date.getTime() >= storyToCompare.date.getTime()) {
-    if (props.video?.id === storyToCompare.id)
-      return progress * width / (length * 1.5)
-    if (props.video?.date.getTime() > storyToCompare.date.getTime())
-      return width / (length * 1.5)
+const handleProgressBar = (progress, storyToCompare, visible, story, length) => {
+  if (!isNaN(progress) && visible && new Date(story?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
+    if (story?.uid === storyToCompare.uid)
+      return progress * width / (length * 1.5);
+    if (new Date(story?.date).getTime() > new Date(storyToCompare.date).getTime())
+      return width / (length * 1.5);
   }
   return 0;
 }
 
-const WeeklInfo = (props) => {
-  const user = getUserById(props.user);
+/**
+ * Component that contains all the informations of a weekl
+ * such as the user, the progress of the video, the number of video, etc.
+ * @param {*} user_id the id of the user
+ * @param {*} visible if the weekl is visible on screen
+ * @param {*} handleDayClick function the handle a day click by the user (parent function)
+ * @param {*} currentStories the current stories that contains the weekl
+ * @param {*} currentStory the current story that is currently playing in the weekl
+ * @returns 
+ */
+const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentStory }) => {
+  const [user, setUser] = useState(undefined);
   const [progress, setProgress] = useState(0);
-  const length = props.stories.filter(s => isSameDay(s.date, props.video?.date)).length;
+  const [story, setStory] = useState(undefined);
+  const [stories, setStories] = useState([]);
+  const length = stories?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).length;
 
   useEffect(() => {
-    currentProgress.onProgress().subscribe(progress => setProgress(progress));
+    findUserById(user_id).subscribe({
+      next: u => setUser(u),
+      error: () => currentSnackbar.set({ type: 'ERROR', message: 'User not found' })
+    });
+    currentStories.onStories().subscribe(setStories);
+    currentStory.onStory().subscribe(setStory);
+    currentProgress.onProgress().subscribe(setProgress);
   }, []);
 
   return (
@@ -53,17 +72,19 @@ const WeeklInfo = (props) => {
     >
       <Image
         style={styles.picture}
-        source={{uri: user?.picture}}
+        source={user?.picture ? { uri: user?.picture } : require('../../assets/pictures/default.jpg')}
         resizeMode='cover'
       />
       <View style={styles.infos}>
         <Text style={styles.username}>@{user?.username}</Text>
         <View style={styles.barContainer}>
-          {props.stories.filter(s => isSameDay(s.date, props.video?.date)).map((s, i) =>
-            <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
-              <View style={{ ...styles.progress, width: handleProgressBar(progress, s, props, length) }}></View>
-            </View>
-          )}
+          {
+            stories.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
+              <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
+                <View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></View>
+              </View>
+            )
+          }
         </View>
         <ScrollView
           style={styles.days}
@@ -74,10 +95,10 @@ const WeeklInfo = (props) => {
             days.map((d, index) => (
               <View
                 key={index}
-                style={{ ...styles.bubble, backgroundColor: isSameDay(props.video?.date, d.date) ? 'white' : 'rgba(255,255,255,0.5)' }}
-                onTouchEnd={() => { props.handleDayClick(d) }}
+                style={{ ...styles.bubble, backgroundColor: isSameDay(new Date(story?.date), d.date) ? 'white' : 'rgba(255,255,255,0.5)' }}
+                onTouchEnd={() => { handleDayClick(d) }}
               >
-                <Text>{isSameDay(props.video?.date, d.date) ?
+                <Text>{isSameDay(new Date(story?.date), d.date) ?
                   capFirstLetter(d.date.toLocaleDateString('fr-FR', { weekday: 'long' })) :
                   d.date.toLocaleDateString('fr-FR', { weekday: 'narrow' })}
                 </Text>
@@ -119,8 +140,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold'
   },
-  barContainer: { 
-    flex: 1, 
+  barContainer: {
+    flex: 1,
     flexDirection: 'row',
     marginVertical: 5,
   },
