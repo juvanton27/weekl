@@ -20,6 +20,14 @@ export const currentIndex = {
   onIndex: () => index.asObservable(),
 }
 
+/**
+ * Component that contains multiple stories/videos of multiple days
+ * @param {*} user_id the id of the user
+ * @param {*} w_index the index of the weekl currently playing
+ * @param {*} scrollToNextWeekl function that automaticaly slide to the next weekl (parent function)
+ * @param {*} scrollToPreviousWeekl function that automaticaly slide to the next weekl (parent function)
+ * @returns 
+ */
 const Weekl = ({ user_id, w_index, scrollToNextWeekl, scrollToPreviousWeekl }) => {
   // Stories contained in the current weekl
   const stories = new BehaviorSubject([]);

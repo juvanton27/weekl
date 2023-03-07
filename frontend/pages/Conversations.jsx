@@ -1,26 +1,53 @@
-import { useState } from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { getLastMessageFromConv } from "../services/conversations";
-import { getAllConversationsByUserId, getUserById } from "../services/users.service";
+import { useEffect, useState } from "react";
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { BehaviorSubject, map } from "rxjs";
+import { auth } from "../firebase";
+import { findAllConversationsByUserId } from "../services/conversations";
+import Conversation, { currentConversation } from "../widgets/Conversation";
 
 const { width, height } = Dimensions.get('window');
 
-const Conversations = (props) => {
-  const [user, setUser] = useState(0);
+const lastMessageUpdated = new BehaviorSubject({ id: undefined, message: undefined });
+export const currentLastMessageUpdate = {
+  set: ({ id, message }) => lastMessageUpdated.next({ id, message }),
+  onLastMessageUpdated: () => lastMessageUpdated.asObservable()
+}
+/**
+ * Page that displays all the conversations of the logged user
+ * @returns 
+ */
+const Conversations = ({ }) => {
+  const [conversations, setConversations] = useState([]);
+
+  useEffect(() => {
+    findAllConversationsByUserId(auth.currentUser.uid).pipe(
+      map(conversations => setConversations(conversations)),
+    ).subscribe();
+    currentLastMessageUpdate.onLastMessageUpdated().subscribe(({ id, message }) => {
+      console.log('stt', conversations);
+      if (conversations.length > 0) {
+        const nextConversations = conversations.map(conversation => conversation.uid === id ? { ...conversation, last_message: message } : conversation);
+        console.log(nextConversations);
+        setConversations(nextConversations);
+      }
+    })
+  }, []);
+
   return (
-    <View style={styles.container} >
-      <ScrollView contentOffset={{}}>
-        {getAllConversationsByUserId(user)?.sort((a, b) => getLastMessageFromConv(a.id).date.getTime() - getLastMessageFromConv(b.id).date.getTime()).map((c, index) => (
-          <View style={styles.row} key={index}>
-            <Image style={styles.picture} source={getUserById(c.users_id.find(u => u !== user)).picture} resizeMode='cover' />
-            <View style={styles.content}>
-              <Text style={styles.username}>@{getUserById(c.users_id.find(u => u !== user)).username}</Text>
-              <Text style={styles.lastMessage}>{getLastMessageFromConv(c.id).message}</Text>
-              <Text style={styles.lastMessage}>{getLastMessageFromConv(c.id).date.toISOString()}</Text>
+    <View style={styles.container}>
+      <ScrollView style={{ padding: 20 }}>
+        <Text style={styles.title}>Conversations</Text>
+        {conversations.map((conversation, index) => (
+          <Pressable key={index} style={styles.tile} onPress={() => { currentConversation.set(conversation) }}>
+            <Image style={styles.thumbnail} source={{ uri: conversation?.picture }}></Image>
+            <View>
+              <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{conversation?.username}</Text>
+              <Text style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{conversation?.last_message}</Text>
             </View>
-          </View>
+          </Pressable>
         ))}
       </ScrollView>
+      <Conversation />
     </View>
   )
 }
@@ -30,37 +57,28 @@ const styles = StyleSheet.create({
     flex: 1,
     width,
     height,
+    paddingTop: height / 10,
   },
-  row: {
-    marginHorizontal: 5,
-    width: '95%',
+  title: {
+    fontSize: '45px',
+    marginBottom: 10
+  },
+  tile: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'flex-start',
     alignItems: 'center',
-  },
-  content: {
-    position: 'absolute',
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    width: '100%',
-    paddingLeft: '30%',
-    height: '80%',
-    borderRadius: 20,
-    justifyContent: 'space-evenly'
-  },
-  picture: {
-    width: '25%',
-    aspectRatio: 1,
-    backgroundColor: 'black',
-    borderRadius: 90,
+    height: 100,
+    width: width * 9 / 10,
     margin: 5,
-    zIndex: 2
+    borderRadius: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.01)',
   },
-  username: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  lastMessage: {
-    color: 'grey'
+  thumbnail: {
+    height: '80%',
+    aspectRatio: 1,
+    resizeMode: 'cover',
+    borderRadius: 90,
+    marginHorizontal: 10
   }
 });
 

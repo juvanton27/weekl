@@ -1,97 +1,28 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { catchError, concatMap, from, map, throwError } from 'rxjs';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { from, map } from 'rxjs';
+import { db } from '../firebase';
 
-const stories = [
-  {
-    id: 0,
-    videos: [
-      {
-        id: 0,
-        date: new Date(new Date().getTime() - 86400004 * 2),
-        video: require('../assets/videos/01.mp4')
-      },
-      {
-        id: 1,
-        date: new Date(new Date().getTime() - 86400003 * 2),
-        video: require('../assets/videos/02.mp4')
-      },
-      {
-        id: 3,
-        date: new Date(new Date().getTime() - 86400002 * 2),
-        video: require('../assets/videos/03.mp4')
-      },
-      {
-        id: 4,
-        date: new Date(new Date().getTime() - 86400001 * 1),
-        video: require('../assets/videos/04.mp4')
-      },
-    ],
-  },
-  {
-    id: 1,
-    videos: [
-      {
-        id: 5,
-        date: new Date(new Date().getTime() - 86400003 * 1),
-        video: require('../assets/videos/05.mp4')
-      },
-    ],
-  },
-  {
-    id: 2,
-    videos: [
-      {
-        id: 6,
-        date: new Date(new Date().getTime() - 86400002 * 1),
-        video: require('../assets/videos/06.mp4')
-      },
-    ],
-  },
-  {
-    id: 4,
-    videos: [
-      {
-        id: 7,
-        date: new Date(new Date().getTime() - 86400001 * 1),
-        video: require('../assets/videos/07.mp4')
-      },
-    ],
-  },
-];
-
-export function getActiveStoriesByUser(id) {
-  return stories.find(s => s.id === id).videos.filter(v => v.date.getTime() >= new Date().getTime() - (7 * 86400000));
-}
-
-const url = 'http://localhost:3000/stories'
-
+/**
+ * Gets all the user ids who have minimum one active story 
+ * @returns an array of user ids
+ */
 export function findAllActiveUserIds() {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get(`${url}/users`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }));
-      return of({ data: undefined })
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  const storiesRef = collection(db, "stories");
+  const q = query(storiesRef);
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs.map(doc => doc.data().user_id).filter((value, index, array) => array.indexOf(value) === index))
   );
 }
 
+/**
+ * Gets all active stories of a user 
+ * @param {*} id the id of the user
+ * @returns an array of stories
+ */
 export function findAllActiveStoriesByUserId(id) {
-  return from(AsyncStorage.getItem('token')).pipe(
-    concatMap(token => {
-      if (token !== null)
-        return from(axios.get(`${url}/user/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }));
-      return of({ data: undefined })
-    }),
-    map(({ data }) => data),
-    catchError(err => throwError(err))
+  const storiesRef = collection(db, "stories");
+  const q = query(storiesRef, where("user_id", "==", id), orderBy("date"));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id })))
   )
 }
-
-export default stories;

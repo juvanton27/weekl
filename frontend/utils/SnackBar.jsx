@@ -1,7 +1,11 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-const { width, height } = Dimensions.get('window');
-
+/**
+ * Component to display messages as a SnackBar
+ * @param {*} type the type of the message to display  
+ * @param {*} message the message to display  
+ * @returns a render
+ */
 const SnackBar = ({ type, message }) => {
   return (
     <View>

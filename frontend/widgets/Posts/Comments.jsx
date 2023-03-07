@@ -4,9 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BehaviorSubject } from "rxjs";
-import { getCommentsByPost } from "../../services/posts.service";
-import { getUserById } from "../../services/users.service";
+import { BehaviorSubject, concatMap } from "rxjs";
+import { findAllCommentsByPostId } from "../../services/posts.service";
 
 library.add(solid_xmark.faXmark);
 
@@ -22,19 +21,20 @@ export const currentPostComments = {
   set: (post) => postComments.next(post),
   onPostComments: () => postComments.asObservable(),
 }
-const Comments = (props) => {
-  const [visible, setVisible] = useState(false);
-  const [post, setPost] = useState(undefined);
 
-  getCommentsByPost(0);
+/**
+ * Component as a modal to display all the comments of a post 
+ * @returns 
+ */
+const Comments = ({}) => {
+  const [visible, setVisible] = useState(false);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    currentModalVisible.onModalVisible().subscribe(bool => {
-      setVisible(bool);
-    });
-    currentPostComments.onPostComments().subscribe(post => {
-      setPost(post);
-    })
+    currentModalVisible.onModalVisible().subscribe(setVisible);
+    currentPostComments.onPostComments().pipe(
+      concatMap(post => findAllCommentsByPostId(post?.uid)),
+    ).subscribe(setComments);
   }, []);
 
   return (
@@ -46,18 +46,18 @@ const Comments = (props) => {
       style={styles.container}
     >
       <LinearGradient style={styles.header} colors={['rgba(255,255,255,1)', 'rgba(255,255,255,0)']}>
-        <Text style={styles.title}>{getCommentsByPost(post?.id)?.length} comments</Text>
+        <Text style={styles.title}>{comments.length} comments</Text>
         <Pressable style={styles.close} onPress={() => currentModalVisible.set(false)}>
           <FontAwesomeIcon style={styles.icon} icon={solid_xmark.faXmark} color="black" size={20} />
         </Pressable>
       </LinearGradient>
       <ScrollView style={styles.content}>
-        {getCommentsByPost(post?.id)?.map(comment => (
-          <View key={comment.id} style={styles.comment}>
-            <Image style={styles.picture} source={{ uri: getUserById(comment.user_id).picture }} />
+        {comments.map(comment => (
+          <View key={comment.uid} style={styles.comment}>
+            <Image style={styles.picture} source={{ uri: comment.picture }} />
             <View style={styles.text}>
-              <Text style={styles.username}>@{getUserById(comment.user_id).username}</Text>
-              <Text style={styles.commentContent}>{comment.comment}</Text>
+              <Text style={styles.username}>@{comment.username}</Text>
+              <Text style={styles.commentContent}>{comment.content}</Text>
             </View>
           </View>
         ))}
