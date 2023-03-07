@@ -36,7 +36,6 @@ const Conversations = ({ }) => {
   return (
     <View style={styles.container}>
       <ScrollView style={{ padding: 20 }}>
-        <Text style={styles.title}>Conversations</Text>
         {conversations.map((conversation, index) => (
           <Pressable key={index} style={styles.tile} onPress={() => { currentConversation.set(conversation) }}>
             <Image style={styles.thumbnail} source={{ uri: conversation?.picture }}></Image>

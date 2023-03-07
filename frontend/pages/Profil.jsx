@@ -163,9 +163,9 @@ const Profil = ({ own }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: height - 50,
+    height,
     width,
-    top: 50,
+    paddingTop: height / 10,
   },
   bio: {
     flex: 1,
