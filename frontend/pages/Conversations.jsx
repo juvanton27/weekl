@@ -24,7 +24,6 @@ const Conversations = ({ }) => {
       map(conversations => setConversations(conversations)),
     ).subscribe();
     currentLastMessageUpdate.onLastMessageUpdated().subscribe(({ id, message }) => {
-      console.log('stt', conversations);
       if (conversations.length > 0) {
         const nextConversations = conversations.map(conversation => conversation.uid === id ? { ...conversation, last_message: message } : conversation);
         console.log(nextConversations);

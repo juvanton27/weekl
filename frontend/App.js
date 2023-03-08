@@ -1,5 +1,8 @@
+import { library } from '@fortawesome/fontawesome-svg-core';
+import * as magnify from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { createRef, forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import { BehaviorSubject, concatMap, from, map } from 'rxjs';
 import { auth } from './firebase';
 import Authentication from './pages/Authentication';
@@ -8,9 +11,7 @@ import Feed from './pages/Feed';
 import Profil from './pages/Profil';
 import Loading from './utils/Loading';
 import SnackBar from './utils/SnackBar';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import * as magnify from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import Search, { currentModalVisible } from './widgets/Search/Search';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,17 +23,17 @@ const toolbar = [
   { title: 'Weekl', ref: createRef() },
 ];
 
-const Tab = forwardRef(({ item, onItemPress }, ref) => {
+const Tab = forwardRef(({ item, onItemPress, color }, ref) => {
   return (
     <Pressable activeOpacity={false} onPress={onItemPress}>
       <View ref={ref}>
-        <Text style={{ color: 'black', fontSize: 50 / toolbar.length, fontWeight: '800', textTransform: 'uppercase' }}>{item.title}</Text>
+        <Animated.Text style={{ color, fontSize: 50 / toolbar.length, fontWeight: '800', textTransform: 'uppercase' }}>{item.title}</Animated.Text>
       </View>
     </Pressable>
   )
 });
 
-const Indicator = ({ measures, scrollX }) => {
+const Indicator = ({ measures, scrollX, backgroundColor }) => {
   const inputRange = toolbar.map((_, i) => i * width);
   const indicatorWidth = scrollX.interpolate({
     inputRange,
@@ -44,13 +45,19 @@ const Indicator = ({ measures, scrollX }) => {
     extrapolate: 'clamp'
   });
   return (
-    <Animated.View style={{ position: 'absolute', height: 4, width: indicatorWidth, backgroundColor: 'black', bottom: -10, left: 0, transform: [{ translateX }] }} />
+    <Animated.View style={{ position: 'absolute', height: 4, width: indicatorWidth, backgroundColor, bottom: -10, left: 0, transform: [{ translateX }] }} />
   )
 }
 
 const Tabs = ({ scrollX, data, onItemPress }) => {
   const [measures, setMeasures] = useState([]);
   const containerRef = useRef();
+
+  const inputRange = [...toolbar.map((_, i) => i * width), toolbar.length * width];
+  const color = scrollX.interpolate({
+    inputRange,
+    outputRange: ['black', 'black', 'white', 'black']
+  });
 
   useEffect(() => {
     const m = [];
@@ -66,13 +73,19 @@ const Tabs = ({ scrollX, data, onItemPress }) => {
   });
 
   return (
-    <View style={{width: '87%'}}>
-      <View ref={containerRef} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        {data.map((item, index) => (
-          <Tab key={index} item={item} ref={item.ref} onItemPress={() => { onItemPress(index) }} />
-        ))}
+    <View style={{ position: 'absolute', top: 60, width, flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+      <View style={{ width: '87%' }}>
+        <View ref={containerRef} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+          {data.map((item, index) => (
+            <Tab key={index} item={item} ref={item.ref} scrollX={scrollX} color={color} onItemPress={() => { onItemPress(index) }} />
+          ))}
+        </View>
+        {measures.length > 0 && <Indicator measures={measures} scrollX={scrollX} backgroundColor={color} />}
       </View>
-      {measures.length > 0 && <Indicator measures={measures} scrollX={scrollX} />}
+
+      <Pressable style={{ width: '13%', zIndex: 1000}} onPress={() => currentModalVisible.set(true)}>
+        <FontAwesomeIcon icon={magnify.faMagnifyingGlass} size={20} />
+      </Pressable>
     </View>
   )
 }
@@ -154,17 +167,13 @@ export default function App() {
                 <Feed />
                 <Profil />
               </Animated.ScrollView>
-              <View style={{ position: 'absolute', top: 60, width, flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-                <Tabs scrollX={scrollX} data={toolbar} onItemPress={onItemPress} />
-                <Pressable style={{width: '13%'}}>
-                  <FontAwesomeIcon icon={magnify.faMagnifyingGlass} size={20} />
-                </Pressable>
-              </View>
+              <Tabs scrollX={scrollX} data={toolbar} onItemPress={onItemPress} />
             </View>
       }
       <View style={styles.snack}>
         <SnackBar type={snackbarState.type} message={snackbarState.message} />
       </View>
+      <Search />
     </View>
   );
 }

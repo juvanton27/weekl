@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
+import { Animated } from "react-native";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { currentSnackbar } from "../../App";
 import { findUserById } from "../../services/users.service";
@@ -81,7 +82,7 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
           {
             stories.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
               <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
-                <View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></View>
+                <Animated.View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></Animated.View>
               </View>
             )
           }
