@@ -91,7 +91,7 @@ const Tabs = ({ scrollX, data, onItemPress }) => {
 }
 
 export const pageIndex = new BehaviorSubject(2);
-const currentPageIndex = {
+export const currentPageIndex = {
   set: i => pageIndex.next(i),
   onPageIndex: () => pageIndex.asObservable()
 }

@@ -29,7 +29,7 @@ const days = [
  * @param {*} length the length of the stories in the current weekl
  * @returns 0 if not played yet, [0...99] if currently playing, 100 if already played/passed
  */
-const handleProgressBar = (progress, storyToCompare, visible, story, length) => {
+const handleProgressBar = (progress, storyToCompare, visible, story) => {
   if (!isNaN(progress) && visible && new Date(story?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
     if (story?.uid === storyToCompare.uid)
       return `${progress*100}%`;
@@ -54,7 +54,6 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
   const [progress, setProgress] = useState(0);
   const [story, setStory] = useState(undefined);
   const [stories, setStories] = useState([]);
-  const length = stories?.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).length;
 
   useEffect(() => {
     findUserById(user_id).subscribe({
@@ -82,7 +81,7 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
           {
             stories.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
               <View key={i} style={{ ...styles.bar, }}>
-                <Animated.View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></Animated.View>
+                <Animated.View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story) }}></Animated.View>
               </View>
             )
           }

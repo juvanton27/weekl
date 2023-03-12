@@ -40,12 +40,12 @@ const Feed = () => {
   }
 
   const scrollToNextWeekl = () => {
-    _feedview.current.scrollTo({ y: (weeklIndex.getValue() + 1) * height });
+    _feedview.current?.scrollTo({ y: (weeklIndex.getValue() + 1) * height });
   }
 
   const scrollToPreviousWeekl = () => {
     if (weeklIndex.getValue() > 0)
-      _feedview.current.scrollTo({ y: (weeklIndex.getValue() - 1) * height });
+      _feedview.current?.scrollTo({ y: (weeklIndex.getValue() - 1) * height });
   }
 
   const onMomentumScrollEnd = (e) => {

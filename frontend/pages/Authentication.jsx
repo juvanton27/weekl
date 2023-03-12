@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { ActivityIndicator, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { currentSnackbar } from "../App";
+import { currentPageIndex, currentSnackbar } from "../App";
 import { logInWithEmailAndPassword, registerWithEmailAndPassword } from "../firebase.js";
 
 const { width, height } = Dimensions.get('window');
@@ -38,7 +38,10 @@ const Authentication = ({ }) => {
       // Form as login
       if (status === 0) {
         logInWithEmailAndPassword(email, password).subscribe({
-          next: () => currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' }),
+          next: () => {
+            currentPageIndex.set(2);
+            currentSnackbar.set({ type: 'SUCCESS', message: 'Authentication succeeded' })
+          },
           error: (err) => {
             resetForm();
             currentSnackbar.set({ type: 'ERROR', message: err.message });
@@ -50,6 +53,7 @@ const Authentication = ({ }) => {
         if (status === 1 && password === passwordConfirmation) {
           registerWithEmailAndPassword(username, email, password).subscribe({
             next: () => {
+              currentPageIndex.set(2);
               currentSnackbar.set({ type: 'SUCCESS', message: 'Registration succeeded' });
             },
             error: (err) => {
