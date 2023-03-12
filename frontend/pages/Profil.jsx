@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { concatMap, forkJoin, map, of } from 'rxjs';
+import { BehaviorSubject, concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
 import { auth, logout } from '../firebase';
 import { getProfil } from '../services/auth.service';
@@ -12,12 +12,18 @@ import { findAllPostsByUserId } from '../services/posts.service';
 import { findUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
-import { currentProfilSearch, profilSearch } from '../widgets/Search/Search';
+import CameraPost from './Camera';
 import { currentUserIndex } from './Feed';
 
 const { width, height } = Dimensions.get('window');
 
 library.add(inline_logout.faArrowRightFromBracket);
+
+const modalVisible = new BehaviorSubject(false);
+export const currentModalVisible = {
+  set: bool => modalVisible.next(bool),
+  onModalVisible: () => modalVisible.asObservable()
+}
 
 /**
  * Page that displays the logged user informations or a non logged user informations
@@ -99,9 +105,9 @@ const Profil = ({ own, search }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 85 }} ref={_scrollview}>
+      <ScrollView ref={_scrollview}>
         <View style={styles.bio}>
-          <View>
+          <View style={{paddingVertical: 10}}>
             <Image style={styles.picture} source={user?.picture ? { uri: user?.picture } : require('../assets/pictures/default.jpg')} />
             <Text style={styles.username}>@{user?.username}</Text>
           </View>
@@ -122,6 +128,29 @@ const Profil = ({ own, search }) => {
               <Text style={styles.labels}>Posts</Text>
             </View>
           </View>
+          {
+            !own ?
+              <View style={{width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10}}>
+                <View style={styles.button}>
+                  <Button title='Follow' color="black" />
+                </View>
+                <View style={styles.button}>
+                  <Button title='Message' color="black" />
+                </View>
+              </View> : 
+              <View style={{width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10}}>
+                <View style={{...styles.button, transform: [{scale: 0.7}]}}>
+                  <Button title='+ Post' color="black" onPress={() => currentModalVisible.set(true)} />
+                </View>
+                <View style={{...styles.button, backgroundColor: 'black'}}>
+                  <Button title='+ Weekl' color="white" />
+                </View>
+                <View style={{...styles.button, transform: [{scale: 0.7}]}}>
+                  <Button title='Edit' color="black" />
+                </View>
+                <CameraPost />
+              </View>
+          }
           {
             own ?
               !logginOut ?
@@ -154,17 +183,6 @@ const Profil = ({ own, search }) => {
           </View>
         </GestureDetector>
       </ScrollView>
-      {
-        !own ?
-          <View>
-            <View style={{ ...styles.button, left: 25 }}>
-              <Button title='Follow' color="black" />
-            </View>
-            <View style={{ ...styles.button, right: 25 }}>
-              <Button title='Message' color="black" />
-            </View>
-          </View> : ''
-      }
       <Comments />
     </View>
   )
@@ -175,12 +193,12 @@ const styles = StyleSheet.create({
     height,
     width,
     paddingTop: height / 10,
+    rowGap: 20
   },
   bio: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    height: height / 3,
   },
   picture: {
     width: width / 3,
@@ -196,10 +214,13 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'grey',
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: 5
   },
   stats: {
     flexDirection: 'row',
+    padding: 5,
+    paddingBottom: 10
   },
   follows: {
     marginHorizontal: 5,
@@ -220,15 +241,12 @@ const styles = StyleSheet.create({
     right: 20,
   },
   button: {
-    position: 'absolute',
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    width: width / 3,
+    width: '35%',
     height: 50,
-    bottom: 35,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)'
+    backgroundColor: 'rgba(0, 0, 0, 0.1)'
   },
 });
 
