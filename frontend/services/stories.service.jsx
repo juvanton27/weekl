@@ -7,8 +7,9 @@ import { db } from '../firebase';
  * @returns an array of user ids
  */
 export function findAllActiveUserIds() {
+  const sevenDaysAgo = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
   const storiesRef = collection(db, "stories");
-  const q = query(storiesRef);
+  const q = query(storiesRef, where("date", ">=", sevenDaysAgo.toISOString()));
   return from(getDocs(q)).pipe(
     map(querySnapshot => querySnapshot.docs.map(doc => doc.data().user_id).filter((value, index, array) => array.indexOf(value) === index))
   );

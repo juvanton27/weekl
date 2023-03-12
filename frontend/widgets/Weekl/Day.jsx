@@ -25,7 +25,8 @@ const Day = ({ visible, currentStory }) => {
 
   const onPlaybackStatusUpdate = (e) => {
     if (e.didJustFinish) {
-      currentIndex.increment()
+      currentIndex.increment();
+      currentProgress.set(0);
     } else {
       currentProgress.set(e.positionMillis / e.durationMillis)
     }

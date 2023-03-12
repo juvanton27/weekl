@@ -32,11 +32,11 @@ const days = [
 const handleProgressBar = (progress, storyToCompare, visible, story, length) => {
   if (!isNaN(progress) && visible && new Date(story?.date).getTime() >= new Date(storyToCompare.date).getTime()) {
     if (story?.uid === storyToCompare.uid)
-      return progress * width / (length * 1.5);
+      return `${progress*100}%`;
     if (new Date(story?.date).getTime() > new Date(storyToCompare.date).getTime())
-      return width / (length * 1.5);
+      return '100%';
   }
-  return 0;
+  return '0%';
 }
 
 /**
@@ -81,7 +81,7 @@ const WeeklInfo = ({ user_id, visible, handleDayClick, currentStories, currentSt
         <View style={styles.barContainer}>
           {
             stories.filter(s => isSameDay(new Date(s.date), new Date(story?.date))).map((s, i) =>
-              <View key={i} style={{ ...styles.bar, width: width / (length * 1.5) }}>
+              <View key={i} style={{ ...styles.bar, }}>
                 <Animated.View style={{ ...styles.progress, width: handleProgressBar(progress, s, visible, story, length) }}></Animated.View>
               </View>
             )
@@ -134,43 +134,40 @@ const styles = StyleSheet.create({
   },
   infos: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
   },
   username: {
-    // margin: 5,
     color: 'white',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   barContainer: {
-    flex: 1,
     flexDirection: 'row',
-    marginVertical: 5,
+    justifyContent: 'flex-between',
+    alignItems: 'center',
   },
   bar: {
-    height: 1,
+    flex: 1,
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.5)',
     borderRadius: 45,
-    margin: 5,
   },
   progress: {
     backgroundColor: 'white',
     borderRadius: 45,
-    height: 1,
+    height: '100%'
   },
   days: {
-    flexWrap: 'nowrap',
     flexDirection: "row",
     overflow: 'visible',
-    marginVertical: 5,
   },
   bubble: {
     margin: 5,
-    padding: 10,
     borderRadius: 45,
     height: 34,
     minWidth: 34,
-    justifyContent: 'center',
-    alignItems: 'center'
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });
 
