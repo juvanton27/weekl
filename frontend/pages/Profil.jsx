@@ -27,7 +27,7 @@ library.add(inline_logout.faArrowRightFromBracket);
  * @param {*} own if the user own the profil
  * @returns 
  */
-const Profil = ({ own, uid }) => {
+const Profil = ({ own, search }) => {
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
   const [gridView, setGridView] = useState(false);
@@ -76,15 +76,20 @@ const Profil = ({ own, uid }) => {
           setPosts(posts);
         }),
       ).subscribe();
+    } else if(search) {
+      forkJoin({ user: findUserById(search), posts: findAllPostsByUserId(search) }).pipe(
+        map(({ user, posts }) => {
+          setUser(user);
+          setPosts(posts);
+        }),
+      ).subscribe();
     } else {
       currentUserIndex.onUserIndex().pipe(
         concatMap(userId => {
-          console.log(userId);
           if (!userId) return of({ posts: undefined, users: undefined })
           return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) })
         }),
         map(({ posts, user }) => {
-          console.log(posts, user);
           setUser(user);
           setPosts(posts);
         }),

@@ -26,7 +26,7 @@ const currentSearchString = {
 
 const Search = ({ }) => {
   const [visible, setVisible] = useState(false);
-  const [profilVisible, setProfilVisible] = useState(false);
+  const [profilSearch, setProfilSearch] = useState(undefined);
   const [searchResult, setSearchResult] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,7 +41,7 @@ const Search = ({ }) => {
   }, []);
 
   return (
-    !profilVisible ?
+    !profilSearch ?
       <Modal
         animationType="fade"
         visible={visible}
@@ -63,7 +63,7 @@ const Search = ({ }) => {
                 </View> :
                 <ScrollView style={{ padding: 20 }}>
                   {searchResult.map((user, index) => (
-                    <Pressable key={index} style={styles.tile} onPress={() => {setProfilVisible(true); currentUserIndex.set(user?.uid)}}>
+                    <Pressable key={index} style={styles.tile} onPress={() => setProfilSearch(user?.uid)}>
                       <Image style={styles.thumbnail} source={{ uri: user?.picture }}></Image>
                       <View>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{user?.username}</Text>
@@ -78,11 +78,11 @@ const Search = ({ }) => {
       <View style={{ position: 'absolute', backgroundColor: 'white' }}>
         <Pressable
           style={{ position: 'absolute', left: 10, top: 60, zIndex: 1000 }}
-          onPress={() => {setProfilVisible(false); currentUserIndex.set(undefined)}}
+          onPress={() => setProfilSearch(undefined)}
         >
           <FontAwesomeIcon icon={xmark.faXmark} color="black" size={40} />
         </Pressable>
-        <Profil />
+        <Profil search={profilSearch} />
       </View>
   );
 }

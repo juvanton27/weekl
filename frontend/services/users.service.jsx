@@ -26,6 +26,6 @@ export function searchUser(string) {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where('username', '>=', string), where('username', '<=', string+ '\uf8ff'));
   return from(getDocs(q)).pipe(
-    map(querySnapshot => querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id })))
+    map(querySnapshot => querySnapshot.docs.map(doc => (doc.data())))
   );
 }
