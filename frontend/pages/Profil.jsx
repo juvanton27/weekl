@@ -12,6 +12,7 @@ import { findAllPostsByUserId } from '../services/posts.service';
 import { findUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
+import { currentProfilSearch, profilSearch } from '../widgets/Search/Search';
 import { currentUserIndex } from './Feed';
 
 const { width, height } = Dimensions.get('window');
@@ -22,10 +23,11 @@ library.add(inline_logout.faArrowRightFromBracket);
  * Page that displays the logged user informations or a non logged user informations
  * The actions are varying depending on the user own the profil (typically consulting his profil page)
  * or if it's consulting another user's page 
+ * The uid is defined when the profile is diplayed from SearchComponent
  * @param {*} own if the user own the profil
  * @returns 
  */
-const Profil = ({ own }) => {
+const Profil = ({ own, uid }) => {
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
   const [gridView, setGridView] = useState(false);
@@ -77,10 +79,12 @@ const Profil = ({ own }) => {
     } else {
       currentUserIndex.onUserIndex().pipe(
         concatMap(userId => {
+          console.log(userId);
           if (!userId) return of({ posts: undefined, users: undefined })
           return forkJoin({ posts: findAllPostsByUserId(userId), user: findUserById(userId) })
         }),
         map(({ posts, user }) => {
+          console.log(posts, user);
           setUser(user);
           setPosts(posts);
         }),

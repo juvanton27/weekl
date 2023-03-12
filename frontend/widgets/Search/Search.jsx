@@ -1,12 +1,17 @@
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { BehaviorSubject, concatMap, debounceTime, map } from "rxjs";
-import { auth } from "../../firebase";
+import Profil from "../../pages/Profil";
 import { searchUser } from "../../services/users.service";
-
+import { library } from "@fortawesome/fontawesome-svg-core";
+import * as xmark from '@fortawesome/free-solid-svg-icons/faXmark';
+import { currentUserIndex } from "../../pages/Feed";
 
 const { width, height } = Dimensions.get('screen');
+
+library.add(xmark.faXmark);
 
 export const modalVisible = new BehaviorSubject(false);
 export const currentModalVisible = {
@@ -18,8 +23,10 @@ const currentSearchString = {
   set: string => searchString.next(string),
   onSearchString: () => searchString.asObservable()
 }
+
 const Search = ({ }) => {
   const [visible, setVisible] = useState(false);
+  const [profilVisible, setProfilVisible] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,38 +41,49 @@ const Search = ({ }) => {
   }, []);
 
   return (
-    <Modal
-      animationType="fade"
-      visible={visible}
-      presentationStyle="fullScreen"
-      onRequestClose={() => { setSearchResult([]); currentModalVisible.set(false); }}
-    >
-      <View style={styles.container}>
-        <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', paddingHorizontal: 10 }}>
-          <TextInput style={styles.input} autoFocus={true} placeholder="Entrez le nom d'un utilisateur" onChangeText={currentSearchString.set} />
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <Text onPress={() => setVisible(false)}>Cancel</Text>
+    !profilVisible ?
+      <Modal
+        animationType="fade"
+        visible={visible}
+        presentationStyle="fullScreen"
+        onRequestClose={() => { setSearchResult([]); currentModalVisible.set(false); }}
+      >
+        <View style={styles.container}>
+          <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', paddingHorizontal: 10 }}>
+            <TextInput style={styles.input} autoFocus={true} placeholder="Entrez le nom d'un utilisateur" onChangeText={currentSearchString.set} />
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+              <Text onPress={() => setVisible(false)}>Cancel</Text>
+            </View>
           </View>
+          {
+            isLoading ? <ActivityIndicator style={styles.content} /> :
+              searchResult.length === 0 ?
+                <View style={styles.content}>
+                  <Text>No result</Text>
+                </View> :
+                <ScrollView style={{ padding: 20 }}>
+                  {searchResult.map((user, index) => (
+                    <Pressable key={index} style={styles.tile} onPress={() => {setProfilVisible(true); currentUserIndex.set(user?.uid)}}>
+                      <Image style={styles.thumbnail} source={{ uri: user?.picture }}></Image>
+                      <View>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{user?.username}</Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+          }
         </View>
-        {
-          isLoading ? <ActivityIndicator style={styles.content} /> :
-          searchResult.length === 0 ?
-            <View style={styles.content}>
-              <Text>No result</Text>
-            </View> :
-            <ScrollView style={{ padding: 20 }}>
-              {searchResult.map((user, index) => (
-                <Pressable key={index} style={styles.tile}>
-                  <Image style={styles.thumbnail} source={{ uri: user?.picture }}></Image>
-                  <View>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{user?.username}</Text>
-                  </View>
-                </Pressable>
-              ))}
-            </ScrollView>
-        }
+      </Modal>
+      :
+      <View style={{ position: 'absolute', backgroundColor: 'white' }}>
+        <Pressable
+          style={{ position: 'absolute', left: 10, top: 60, zIndex: 1000 }}
+          onPress={() => {setProfilVisible(false); currentUserIndex.set(undefined)}}
+        >
+          <FontAwesomeIcon icon={xmark.faXmark} color="black" size={40} />
+        </Pressable>
+        <Profil />
       </View>
-    </Modal>
   );
 }
 
