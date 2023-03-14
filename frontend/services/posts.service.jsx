@@ -1,6 +1,6 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { concatMap, forkJoin, from, map, of } from 'rxjs';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 import { findUserById } from './users.service';
 
 /**
@@ -27,7 +27,39 @@ export function findAllCommentsByPostId(id) {
   const q = query(commentsRef, where("post_id", "==", id));
   return from(getDocs(q)).pipe(
     concatMap(querySnapshot => of(querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id })))),
-    concatMap(comments => comments.length > 0 ? forkJoin(comments.map(comment => (forkJoin({comment: of(comment), user: findUserById(comment.user_id)})))): of([])),
-    map(commentsUser => commentsUser.map(({comment, user}) => ({...comment, username: user.username, picture: user.picture})))
+    concatMap(comments => comments.length > 0 ? forkJoin(comments.map(comment => (forkJoin({ comment: of(comment), user: findUserById(comment.user_id) })))) : of([])),
+    map(commentsUser => commentsUser.map(({ comment, user }) => ({ ...comment, username: user.username, picture: user.picture })))
   )
+}
+
+export function uploadPicture(picture) {
+  const postsRef = collection(db, "posts");
+
+  return from(fetch(picture.uri)).pipe(
+    concatMap(response => forkJoin({
+      firestore: from(addDoc(postsRef, {
+        user_id: auth.currentUser.uid,
+      })),
+      blob: response.blob(),
+    })),
+    concatMap(({firestore, blob}) => {
+      const id = firestore.id;
+      const token = "sp=racwdl&st=2023-03-14T20:30:03Z&se=2023-03-15T04:30:03Z&skoid=409f9001-20e5-472e-b005-f54de33acceb&sktid=0d16176d-b84e-4dbf-86ae-7d2f69a59908&skt=2023-03-14T20:30:03Z&ske=2023-03-15T04:30:03Z&sks=b&skv=2021-12-02&spr=https&sv=2021-12-02&sr=c&sig=mh17F3YMBvvvsdIFCM54y9LBx6FUbmbGE3%2BrrBJ1N5A%3D";
+      const url = `https://weeklapp.blob.core.windows.net/weekl/posts/${id}.jpg`;
+      const updateRef = doc(db, 'posts', id);
+      return forkJoin({
+        azureUpload: from(fetch(`${url}?${token}`, {
+          method: 'PUT',
+          headers: {
+            "Content-Type": "image/jpeg",
+            "x-ms-blob-type": "BlockBlob",
+          },
+          body: blob
+        })),
+        firestoreUpdate: from(updateDoc(updateRef, {
+          picture: url
+        }))
+      })
+    })
+  );
 }
