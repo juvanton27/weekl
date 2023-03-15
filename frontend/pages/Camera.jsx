@@ -12,18 +12,21 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { manipulateAsync } from "expo-image-manipulator";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { uploadPicture } from "../services/posts.service";
+import { Video } from "expo-av";
+import { uploadStory } from "../services/stories.service";
 
 const { width, height } = Dimensions.get('screen');
 
 library.add(faArrowRotateLeft, faClose, faArrowRight);
 
-const CameraPost = ({refresh}) => {
+const CameraPost = ({ mode, refresh }) => {
   const [type, setType] = useState(CameraType.back);
   const [permission, setPermission] = useState(Camera.requestCameraPermissionsAsync());
   const [visible, setVisible] = useState(false);
   const [photo, setPhoto] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [recording, setRecording] = useState(false);
   const cameraRef = useRef();
 
   const toggleCameraType = () => {
@@ -48,7 +51,7 @@ const CameraPost = ({refresh}) => {
         ))),
         // For development on simulator
         catchError(() => from(manipulateAsync(
-          'https://weeklapp.blob.core.windows.net/weekl/posts/yHBGyqm610vkwzDGbtBV.jpeg',
+          'https://weeklapp.blob.core.windows.net/weekl/posts/SZoearHfvLVJ6drZE0ZC.jpg',
           [{
             crop: {
               height: 85 / 100,
@@ -65,6 +68,24 @@ const CameraPost = ({refresh}) => {
     }
   }
 
+  const startRecording = () => {
+    if (!photo) {
+      setRecording(true);
+      from(cameraRef.current.recordAsync()).subscribe(setPhoto);
+    } else {
+      setPhoto(undefined);
+    }
+  }
+
+  const stopRecording = () => {
+    if (!photo) {
+      setRecording(false);
+      cameraRef.current.stopRecording();
+    } else {
+      setPhoto(undefined);
+    }
+  }
+
   const postPicture = () => {
     of(setPosting(true)).pipe(
       concatMap(() => uploadPicture(photo)),
@@ -75,6 +96,15 @@ const CameraPost = ({refresh}) => {
       next: () => refresh(),
       error: err => console.log(err)
     })
+  }
+
+  const postWeekl = () => {
+    of(setPosting(true)).pipe(
+      concatMap(() => uploadStory(photo)),
+      map(() => setPhoto(undefined)),
+      map(() => setPosting(false)),
+      map(() => setVisible(false)),
+    ).subscribe()
   }
 
   const dblTap = Gesture.Tap().numberOfTaps(2).onStart(() => toggleCameraType())
@@ -93,8 +123,8 @@ const CameraPost = ({refresh}) => {
       {
         posting ?
           // Loading screen while uploading post
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black'}}>
-            <Text style={{color: 'white'}}>Your picture is currently posting</Text>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+            <Text style={{ color: 'white' }}>Your picture is currently posting</Text>
             <ActivityIndicator color={'rgba(255,255,255,0.5)'} />
           </View> :
 
@@ -104,84 +134,102 @@ const CameraPost = ({refresh}) => {
               !photo ? <Camera ref={cameraRef} style={{ ...styles.camera }} type={type} /> : ''
             }
             <GestureDetector gesture={dblTap}>
-            <View style={{ position: 'absolute', height, width, alignItems: 'center' }}>
+              <View style={{ position: 'absolute', height, width, alignItems: 'center' }}>
 
-              {/* Top component */}
-              <View style={{ height: '35%' }}>
-                <BlurView
-                  intensity={30}
-                  tint='light'
-                  style={{ width: "100%", height: "100%" }}
-                >
+                {/* Top component */}
+                <View style={{ height: '35%' }}>
+                  <BlurView
+                    intensity={30}
+                    tint='light'
+                    style={{ width: "100%", height: "100%" }}
+                  >
 
-                </BlurView>
+                  </BlurView>
+                </View>
+
+                {/* Camera cadran */}
+                {
+                  // If it is for a post
+                  mode === 'post' ?
+                    (
+                      // If no post already taken
+                      !photo ?
+                        <View style={{ width: '85%', aspectRatio: 1 }}>
+                          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'stretch' }}>
+                            <View style={{ flex: 1, marginEnd: 125, marginBottom: 100, borderTopStartRadius: 20, borderLeftWidth: 5, borderTopWidth: 5, borderColor: 'white' }} />
+                            <View style={{ flex: 1, marginStart: 125, marginBottom: 100, borderTopRightRadius: 20, borderRightWidth: 5, borderTopWidth: 5, borderColor: 'white' }} />
+                          </View>
+                          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View style={{ flex: 1, marginEnd: 125, marginTop: 100, borderBottomLeftRadius: 20, borderLeftWidth: 5, borderBottomWidth: 5, borderColor: 'white' }} />
+                            <View style={{ flex: 1, marginStart: 125, marginTop: 100, borderBottomRightRadius: 20, borderBottomWidth: 5, borderRightWidth: 5, borderColor: 'white' }} />
+                          </View>
+                        </View> :
+                        // Otherwise show photo taken
+                        <Image style={{ width: '85%', aspectRatio: 1, resizeMode: 'contain' }} source={{ uri: photo.uri }} />
+                    ) :
+                    (
+                      // If video taken
+                      photo ?
+                          <Video
+                            style={{ position: 'absolute', width, height }}
+                            source={{ uri: photo.uri }}
+                            resizeMode='contain'
+                            isLooping
+                            shouldPlay
+                          />
+                        : ''
+                    )
+                }
+
+                {/* Bottom component */}
+                <View style={{ flex: 1, position: 'absolute', width, bottom: 0, height: 1 / 5 * height, flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center' }}>
+                  {/* Left component */}
+                  <View style={{ backgroundColor: 'black', height: '30%', aspectRatio: 1, borderRadius: 20, borderWidth: 2, borderColor: 'white' }}>
+
+                  </View>
+                  {/* Middle component */}
+                  <View style={{ aspectRatio: 1, height: '60%', borderRadius: 90, overflow: "hidden", backgroundColor: "transparent" }}>
+                    <Pressable onTouchStart={mode === 'weekl' ? startRecording : () => { }} onTouchEnd={mode === 'weekl' ? stopRecording : () => { }} onPress={mode === 'post' ? takeAPicture : () => { }}>
+                      <BlurView
+                        intensity={30}
+                        tint='light'
+                        style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
+                      >
+                        {
+                          isLoading ? <ActivityIndicator /> :
+                            !photo ?
+                              <Text style={{ fontSize: 50, color: 'rgba(255,255,255,0.6)' }}>+</Text> :
+                              <FontAwesomeIcon icon={faArrowRotateLeft} color={'rgba(255,255,255,0.6)'} size={20} />
+                        }
+                      </BlurView>
+                    </Pressable>
+                  </View>
+                  {/* Right component */}
+                  <View style={{ aspectRatio: 1, height: '30%', borderRadius: 90, overflow: "hidden", backgroundColor: "transparent" }}>
+                    {
+                      !photo ?
+                        <Pressable onPress={() => { currentModalVisible.set(false) }}>
+                          <BlurView
+                            intensity={30}
+                            tint='light'
+                            style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
+                          >
+                            <FontAwesomeIcon icon={faClose} color='rgba(255,255,255,0.6)' />
+                          </BlurView>
+                        </Pressable> :
+                        <Pressable onPress={() => mode === 'post' ? postPicture() : postWeekl()}>
+                          <BlurView
+                            intensity={30}
+                            tint='light'
+                            style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
+                          >
+                            <FontAwesomeIcon icon={faArrowRight} color='rgba(255,255,255,0.6)' />
+                          </BlurView>
+                        </Pressable>
+                    }
+                  </View>
+                </View>
               </View>
-
-              {/* Camera cadran */}
-              {
-                !photo ?
-                  <View style={{ width: '85%', aspectRatio: 1 }}>
-                    <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'stretch' }}>
-                      <View style={{ flex: 1, marginEnd: 125, marginBottom: 100, borderTopStartRadius: 20, borderLeftWidth: 5, borderTopWidth: 5, borderColor: 'white' }} />
-                      <View style={{ flex: 1, marginStart: 125, marginBottom: 100, borderTopRightRadius: 20, borderRightWidth: 5, borderTopWidth: 5, borderColor: 'white' }} />
-                    </View>
-                    <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <View style={{ flex: 1, marginEnd: 125, marginTop: 100, borderBottomLeftRadius: 20, borderLeftWidth: 5, borderBottomWidth: 5, borderColor: 'white' }} />
-                      <View style={{ flex: 1, marginStart: 125, marginTop: 100, borderBottomRightRadius: 20, borderBottomWidth: 5, borderRightWidth: 5, borderColor: 'white' }} />
-                    </View>
-                  </View> :
-                  <Image style={{ width: '85%', aspectRatio: 1, resizeMode: 'contain' }} source={{ uri: photo.uri }} />
-              }
-
-              {/* Bottom component */}
-              <View style={{ flex: 1, position: 'absolute', width, bottom: 0, height: 1 / 5 * height, flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center' }}>
-                {/* Left component */}
-                <View style={{ backgroundColor: 'black', height: '30%', aspectRatio: 1, borderRadius: 20, borderWidth: 2, borderColor: 'white' }}>
-
-                </View>
-                {/* Middle component */}
-                <View style={{ aspectRatio: 1, height: '60%', borderRadius: 90, overflow: "hidden", backgroundColor: "transparent" }}>
-                  <Pressable onPress={takeAPicture}>
-                    <BlurView
-                      intensity={30}
-                      tint='light'
-                      style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
-                    >
-                      {
-                        isLoading ? <ActivityIndicator /> :
-                          !photo ?
-                            <Text style={{ fontSize: 50, color: 'rgba(255,255,255,0.6)' }}>+</Text> :
-                            <FontAwesomeIcon icon={faArrowRotateLeft} color={'rgba(255,255,255,0.6)'} size={20} />
-                      }
-                    </BlurView>
-                  </Pressable>
-                </View>
-                {/* Right component */}
-                <View style={{ aspectRatio: 1, height: '30%', borderRadius: 90, overflow: "hidden", backgroundColor: "transparent" }}>
-                  {
-                    !photo ?
-                      <Pressable onPress={() => { currentModalVisible.set(false) }}>
-                        <BlurView
-                          intensity={30}
-                          tint='light'
-                          style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
-                        >
-                          <FontAwesomeIcon icon={faClose} color='rgba(255,255,255,0.6)' />
-                        </BlurView>
-                      </Pressable> :
-                      <Pressable onPress={() => postPicture()}>
-                        <BlurView
-                          intensity={30}
-                          tint='light'
-                          style={{ width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center' }}
-                        >
-                          <FontAwesomeIcon icon={faArrowRight} color='rgba(255,255,255,0.6)' />
-                        </BlurView>
-                      </Pressable>
-                  }
-                </View>
-              </View>
-            </View>
             </GestureDetector>
           </View>
       }

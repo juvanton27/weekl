@@ -2,7 +2,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import * as inline_logout from '@fortawesome/free-solid-svg-icons/faArrowRightFromBracket';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Button, Dimensions, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Button, Dimensions, Image, LayoutAnimation, NativeModules, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { BehaviorSubject, concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
@@ -44,6 +44,12 @@ const Profil = ({ own, search }) => {
   const [postCords, setPostCords] = useState([]);
   const [logginOut, setLoggingOut] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [cameraMode, setCameraMode] = useState('weekl') // weekl or post
+
+  const {UIManager} = NativeModules;
+
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 
   const pinch = Gesture.Pinch().onStart((e) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -163,20 +169,20 @@ const Profil = ({ own, search }) => {
               </View> :
               <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10 }}>
                 <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
-                  <Button title='+ Post' color="black" onPress={() => currentModalVisible.set(true)} />
+                  <Button title='+ Post' color="black" onPress={() => {setCameraMode('post'); currentModalVisible.set(true)}} />
                 </View>
                 <View style={{ ...styles.button, backgroundColor: 'black' }}>
-                  <Button title='+ Weekl' color="white" />
+                  <Button title='+ Weekl' color="white" onPress={() => {setCameraMode('weekl'); currentModalVisible.set(true)}} />
                 </View>
                 <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
                   {
                     !editMode ?
-                      <Button title='Edit' color="black" onPress={() => setEditMode(true)} /> :
+                      <Button title='Edit' color="black" onPress={() => {setEditMode(true); LayoutAnimation.spring()}} /> :
                       <Button title='Finish editing' color="black" onPress={() => setEditMode(false)} />
 
                   }
                 </View>
-                <CameraPost refresh={getOwnProfil} />
+                <CameraPost mode={cameraMode} refresh={getOwnProfil} />
               </View>
           }
           {
@@ -207,8 +213,8 @@ const Profil = ({ own, search }) => {
                   <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />
                   {
                     editMode ?
-                      <Pressable onPress={() => deletePost(post?.uid)} style={{ width: 40, aspectRatio: 1, backgroundColor: 'black', borderRadius: 90, position: 'absolute', top: -10, right: 0, zIndex: 10, justifyContent: 'center', alignItems: 'center' }}>
-                        <FontAwesomeIcon icon={faTrash} color='rgba(255,255,255,0.5)' />
+                      <Pressable onPress={() => deletePost(post?.uid)} style={{ width: editMode ? 40 : 0, aspectRatio: 1, backgroundColor: 'white', borderRadius: 90, position: 'absolute', top: -10, right: 0, zIndex: 10, justifyContent: 'center', alignItems: 'center' }}>
+                        <FontAwesomeIcon icon={faTrash} color='rgba(0,0,0,0.5)' />
                       </Pressable> : ''
                   }
                 </TouchableOpacity>
