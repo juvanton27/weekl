@@ -167,7 +167,7 @@ const Profil = ({ own, search }) => {
                   <Button title='Message' color="black" />
                 </View>
               </View> :
-              <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10 }}>
+              <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10, marginVertical: 20 }}>
                 <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
                   <Button title='+ Post' color="black" onPress={() => {setCameraMode('post'); currentModalVisible.set(true)}} />
                 </View>
@@ -194,6 +194,11 @@ const Profil = ({ own, search }) => {
               : ''
           }
         </View>
+        {
+          posts?.length === 0 ?
+          <View style={{width, height: 200, justifyContent: 'center', alignItems: 'center'}}>
+            <Text>No posts currently</Text> 
+          </View>:
         <GestureDetector gesture={pinch}>
           <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
             {posts?.map((post, index) => (
@@ -222,6 +227,7 @@ const Profil = ({ own, search }) => {
             ))}
           </View>
         </GestureDetector>
+        }
       </ScrollView>
       <Comments />
       <ConfirmationModal />
