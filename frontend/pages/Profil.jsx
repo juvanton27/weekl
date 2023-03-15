@@ -9,17 +9,19 @@ import { currentSnackbar } from '../App';
 import { auth, logout } from '../firebase';
 import { getProfil } from '../services/auth.service';
 import { deletePostById, findAllPostsByUserId } from '../services/posts.service';
-import { findUserById } from '../services/users.service';
+import { findUserById, followUserById, unfollowUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
 import CameraPost from './Camera';
 import { currentUserIndex } from './Feed';
 import { faTrash } from '@fortawesome/fontawesome-free-solid';
 import ConfirmationModal, { currentConfirmationModal } from '../utils/ConfirmationModal';
+import { faUserPlus } from '@fortawesome/fontawesome-free-solid';
+import { faUserMinus } from '@fortawesome/fontawesome-free-solid';
 
 const { width, height } = Dimensions.get('window');
 
-library.add(inline_logout.faArrowRightFromBracket, faTrash);
+library.add(inline_logout.faArrowRightFromBracket, faTrash, faUserPlus, faUserMinus);
 
 const modalVisible = new BehaviorSubject(false);
 export const currentModalVisible = {
@@ -46,10 +48,10 @@ const Profil = ({ own, search }) => {
   const [editMode, setEditMode] = useState(false);
   const [cameraMode, setCameraMode] = useState('weekl') // weekl or post
 
-  const {UIManager} = NativeModules;
+  const { UIManager } = NativeModules;
 
   UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+    UIManager.setLayoutAnimationEnabledExperimental(true);
 
   const pinch = Gesture.Pinch().onStart((e) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -101,8 +103,8 @@ const Profil = ({ own, search }) => {
       response
     });
     response.asObservable().pipe(
-      concatMap((bool) => forkJoin({delete: bool?deletePostById(id):of(undefined), bool: of(bool)})),
-      map(({bool}) => bool ? getOwnProfil() : '')
+      concatMap((bool) => forkJoin({ delete: bool ? deletePostById(id) : of(undefined), bool: of(bool) })),
+      map(({ bool }) => bool ? getOwnProfil() : '')
     ).subscribe({
       error: () => currentSnackbar.set({ type: 'ERROR', message: 'An error occured while deleting post' })
     });
@@ -143,11 +145,11 @@ const Profil = ({ own, search }) => {
           <Text style={styles.description}>{user?.description}</Text>
           <View style={styles.stats}>
             <View style={styles.follows}>
-              <Text style={styles.numbers}>{user?.followers}</Text>
+              <Text style={styles.numbers}>{user?.followers?.length ?? 0}</Text>
               <Text style={styles.labels}>Followers</Text>
             </View>
             <View style={styles.follows}>
-              <Text style={styles.numbers}>{user?.following}</Text>
+              <Text style={styles.numbers}>{user?.following?.length ?? 0}</Text>
               <Text style={styles.labels}>Following</Text>
             </View>
             <View style={styles.follows}>
@@ -161,7 +163,17 @@ const Profil = ({ own, search }) => {
             !own ?
               <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10 }}>
                 <View style={styles.button}>
-                  <Button title='Follow' color="black" />
+                  {
+                    user?.followers?.includes(auth.currentUser.uid) ?
+                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: '75%' }} onPress={() => unfollowUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
+                        <FontAwesomeIcon icon={faUserMinus} />
+                        <Text>Unfollow</Text>
+                      </TouchableOpacity> :
+                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: '75%' }} onPress={() => followUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
+                        <FontAwesomeIcon icon={faUserPlus} />
+                        <Text>Follow</Text>
+                      </TouchableOpacity>
+                  }
                 </View>
                 <View style={styles.button}>
                   <Button title='Message' color="black" />
@@ -169,15 +181,15 @@ const Profil = ({ own, search }) => {
               </View> :
               <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10, marginVertical: 20 }}>
                 <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
-                  <Button title='+ Post' color="black" onPress={() => {setCameraMode('post'); currentModalVisible.set(true)}} />
+                  <Button title='+ Post' color="black" onPress={() => { setCameraMode('post'); currentModalVisible.set(true) }} />
                 </View>
                 <View style={{ ...styles.button, backgroundColor: 'black' }}>
-                  <Button title='+ Weekl' color="white" onPress={() => {setCameraMode('weekl'); currentModalVisible.set(true)}} />
+                  <Button title='+ Weekl' color="white" onPress={() => { setCameraMode('weekl'); currentModalVisible.set(true) }} />
                 </View>
                 <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
                   {
                     !editMode ?
-                      <Button title='Edit' color="black" onPress={() => {setEditMode(true); LayoutAnimation.spring()}} /> :
+                      <Button title='Edit' color="black" onPress={() => { setEditMode(true); LayoutAnimation.spring() }} /> :
                       <Button title='Finish editing' color="black" onPress={() => setEditMode(false)} />
 
                   }
@@ -196,37 +208,37 @@ const Profil = ({ own, search }) => {
         </View>
         {
           posts?.length === 0 ?
-          <View style={{width, height: 200, justifyContent: 'center', alignItems: 'center'}}>
-            <Text>No posts currently</Text> 
-          </View>:
-        <GestureDetector gesture={pinch}>
-          <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
-            {posts?.map((post, index) => (
-              <View key={index} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
-                postCords[index] = e.nativeEvent.layout.y + height / 3 - 100;
-                setPostCords(postCords);
-              }}>
-                <TouchableOpacity activeOpacity={1} onPress={() => {
-                  if (gridView) {
-                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => _scrollview.current.scrollTo({ y: postCords[index] }));
-                    fadeIn();
-                    setGridView(false);
-                  } else {
-                    _scrollview.current.scrollTo({ y: postCords[index] });
-                  }
-                }}>
-                  <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />
-                  {
-                    editMode ?
-                      <Pressable onPress={() => deletePost(post?.uid)} style={{ width: editMode ? 40 : 0, aspectRatio: 1, backgroundColor: 'white', borderRadius: 90, position: 'absolute', top: -10, right: 0, zIndex: 10, justifyContent: 'center', alignItems: 'center' }}>
-                        <FontAwesomeIcon icon={faTrash} color='rgba(0,0,0,0.5)' />
-                      </Pressable> : ''
-                  }
-                </TouchableOpacity>
+            <View style={{ width, height: 200, justifyContent: 'center', alignItems: 'center' }}>
+              <Text>No posts currently</Text>
+            </View> :
+            <GestureDetector gesture={pinch}>
+              <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+                {posts?.map((post, index) => (
+                  <View key={index} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
+                    postCords[index] = e.nativeEvent.layout.y + height / 3 - 100;
+                    setPostCords(postCords);
+                  }}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => {
+                      if (gridView) {
+                        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut, () => _scrollview.current.scrollTo({ y: postCords[index] }));
+                        fadeIn();
+                        setGridView(false);
+                      } else {
+                        _scrollview.current.scrollTo({ y: postCords[index] });
+                      }
+                    }}>
+                      <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />
+                      {
+                        editMode ?
+                          <Pressable onPress={() => deletePost(post?.uid)} style={{ width: editMode ? 40 : 0, aspectRatio: 1, backgroundColor: 'white', borderRadius: 90, position: 'absolute', top: -10, right: 0, zIndex: 10, justifyContent: 'center', alignItems: 'center' }}>
+                            <FontAwesomeIcon icon={faTrash} color='rgba(0,0,0,0.5)' />
+                          </Pressable> : ''
+                      }
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </GestureDetector>
+            </GestureDetector>
         }
       </ScrollView>
       <Comments />

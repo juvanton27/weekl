@@ -13,6 +13,12 @@ export const currentProgress = {
   onProgress: () => progress.asObservable(),
 }
 
+export const videoLoaded = new BehaviorSubject(false);
+export const currentVideoLoaded = {
+  set: bool => videoLoaded.next(bool),
+  onVideoLoaded: () => videoLoaded.asObservable()
+}
+
 /**
  * Component that contains the video of the weekl to display
  * @param {*} visible if the day is currently visible on screen
@@ -22,6 +28,7 @@ export const currentProgress = {
 const Day = ({ visible, currentStory }) => {
   const ref = useRef();
   const [video, setVideo] = useState(undefined);
+  const [loaded, setLoaded] = useState(false);
 
   const onPlaybackStatusUpdate = (e) => {
     if (e.didJustFinish) {
@@ -33,6 +40,7 @@ const Day = ({ visible, currentStory }) => {
   }
 
   useEffect(() => {
+    currentVideoLoaded.onVideoLoaded().subscribe(setLoaded)
     currentStory?.onStory().subscribe(
       story => setVideo(story?.video));
   }, [])
@@ -46,11 +54,13 @@ const Day = ({ visible, currentStory }) => {
       isMuted={false}
       source={{uri: video}}
       resizeMode='cover'
-      shouldPlay={visible && pageIndex.getValue() === 2}
+      shouldPlay={visible && pageIndex.getValue() === 2 && loaded}
       positionMillis={0}
       onTouchStart={() => ref.current.pauseAsync()}
       onTouchEnd={() => ref.current.playAsync()}
       onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+      onLoad={() => currentVideoLoaded.set(true)}
+      onLoadStart={() => {currentVideoLoaded.set(false); currentProgress.set(0)}}
     />
   )
 }
