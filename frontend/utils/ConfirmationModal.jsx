@@ -34,7 +34,7 @@ const ConfirmationModal = () => {
       visible={visible}
     >
       <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-        <View style={{ minHeight: 100, minWidth: 200, backgroundColor: 'rgba(255,255,255,0.9)', padding: 20, borderRadius: 30, justifyContent: 'space-between' }}>
+        <View style={{ minHeight: 100, minWidth: 200, backgroundColor: 'white', padding: 20, borderRadius: 20, justifyContent: 'space-between' }}>
           <Text style={{fontSize: 30, marginBottom: 20}}>{title}</Text>
           <Text style={{marginBottom: 20}}>{message}</Text>
           <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>

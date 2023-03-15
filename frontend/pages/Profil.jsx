@@ -95,7 +95,7 @@ const Profil = ({ own, search }) => {
       response
     });
     response.asObservable().pipe(
-      concatMap((bool) => forkJoin({delete: deletePostById(id), bool: of(bool)})),
+      concatMap((bool) => forkJoin({delete: bool?deletePostById(id):of(undefined), bool: of(bool)})),
       map(({bool}) => bool ? getOwnProfil() : '')
     ).subscribe({
       error: () => currentSnackbar.set({ type: 'ERROR', message: 'An error occured while deleting post' })

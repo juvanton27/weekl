@@ -68,6 +68,7 @@ const CameraPost = ({refresh}) => {
   const postPicture = () => {
     of(setPosting(true)).pipe(
       concatMap(() => uploadPicture(photo)),
+      map(() => setPhoto(undefined)),
       map(() => setPosting(false)),
       map(() => setVisible(false)),
     ).subscribe({
