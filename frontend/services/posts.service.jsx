@@ -1,5 +1,5 @@
-import { addDoc, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
-import { concatMap, forkJoin, from, map, of } from 'rxjs';
+import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { catchError, concatMap, forkJoin, from, map, of, throwError } from 'rxjs';
 import { auth, db } from '../firebase';
 import { findUserById } from './users.service';
 
@@ -10,7 +10,7 @@ import { findUserById } from './users.service';
  */
 export function findAllPostsByUserId(id) {
   const postsRef = collection(db, "posts");
-  const q = query(postsRef, where("user_id", "==", id));
+  const q = query(postsRef, where("user_id", "==", id), orderBy("date", "desc"));
   return from(getDocs(q)).pipe(
     map(querySnapshot => querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }))),
   );
@@ -34,17 +34,17 @@ export function findAllCommentsByPostId(id) {
 
 export function uploadPicture(picture) {
   const postsRef = collection(db, "posts");
-
   return from(fetch(picture.uri)).pipe(
     concatMap(response => forkJoin({
       firestore: from(addDoc(postsRef, {
         user_id: auth.currentUser.uid,
+        date: new Date().toISOString()
       })),
       blob: response.blob(),
     })),
     concatMap(({firestore, blob}) => {
       const id = firestore.id;
-      const token = "sp=racwdl&st=2023-03-14T20:30:03Z&se=2023-03-15T04:30:03Z&skoid=409f9001-20e5-472e-b005-f54de33acceb&sktid=0d16176d-b84e-4dbf-86ae-7d2f69a59908&skt=2023-03-14T20:30:03Z&ske=2023-03-15T04:30:03Z&sks=b&skv=2021-12-02&spr=https&sv=2021-12-02&sr=c&sig=mh17F3YMBvvvsdIFCM54y9LBx6FUbmbGE3%2BrrBJ1N5A%3D";
+      const token = "sp=racwdl&st=2023-03-15T09:56:44Z&se=2023-03-15T17:56:44Z&skoid=409f9001-20e5-472e-b005-f54de33acceb&sktid=0d16176d-b84e-4dbf-86ae-7d2f69a59908&skt=2023-03-15T09:56:44Z&ske=2023-03-15T17:56:44Z&sks=b&skv=2021-12-02&spr=https&sv=2021-12-02&sr=c&sig=K8Aa2p5i5vv0WE1zQeeVRU%2FNyok53ymZIlWC0GBBRE4%3D";
       const url = `https://weeklapp.blob.core.windows.net/weekl/posts/${id}.jpg`;
       const updateRef = doc(db, 'posts', id);
       return forkJoin({
@@ -60,6 +60,17 @@ export function uploadPicture(picture) {
           picture: url
         }))
       })
-    })
+    }),
+    catchError(throwError)
+  );
+}
+
+export function deletePostById(id) {
+  const token = "sp=racwdl&st=2023-03-15T09:56:44Z&se=2023-03-15T17:56:44Z&skoid=409f9001-20e5-472e-b005-f54de33acceb&sktid=0d16176d-b84e-4dbf-86ae-7d2f69a59908&skt=2023-03-15T09:56:44Z&ske=2023-03-15T17:56:44Z&sks=b&skv=2021-12-02&spr=https&sv=2021-12-02&sr=c&sig=K8Aa2p5i5vv0WE1zQeeVRU%2FNyok53ymZIlWC0GBBRE4%3D";
+  const url = `https://weeklapp.blob.core.windows.net/weekl/posts/${id}.jpg`;
+  return from(fetch(`${url}?${token}`, {
+    method: 'DELETE'
+  })).pipe(
+    concatMap(() => from(deleteDoc(doc(db, "posts", id))))
   );
 }

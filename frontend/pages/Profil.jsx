@@ -8,16 +8,18 @@ import { BehaviorSubject, concatMap, forkJoin, map, of } from 'rxjs';
 import { currentSnackbar } from '../App';
 import { auth, logout } from '../firebase';
 import { getProfil } from '../services/auth.service';
-import { findAllPostsByUserId } from '../services/posts.service';
+import { deletePostById, findAllPostsByUserId } from '../services/posts.service';
 import { findUserById } from '../services/users.service';
 import Comments from "../widgets/Posts/Comments";
 import Post from '../widgets/Posts/Post';
 import CameraPost from './Camera';
 import { currentUserIndex } from './Feed';
+import { faTrash } from '@fortawesome/fontawesome-free-solid';
+import ConfirmationModal, { currentConfirmationModal } from '../utils/ConfirmationModal';
 
 const { width, height } = Dimensions.get('window');
 
-library.add(inline_logout.faArrowRightFromBracket);
+library.add(inline_logout.faArrowRightFromBracket, faTrash);
 
 const modalVisible = new BehaviorSubject(false);
 export const currentModalVisible = {
@@ -41,6 +43,7 @@ const Profil = ({ own, search }) => {
   const _scrollview = useRef();
   const [postCords, setPostCords] = useState([]);
   const [logginOut, setLoggingOut] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const pinch = Gesture.Pinch().onStart((e) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -74,15 +77,35 @@ const Profil = ({ own, search }) => {
     })
   }
 
+  const getOwnProfil = () => {
+    forkJoin({ user: getProfil(), posts: findAllPostsByUserId(auth.currentUser.uid) }).pipe(
+      map(({ user, posts }) => {
+        setUser(user);
+        setPosts(posts);
+      }),
+    ).subscribe();
+  }
+
+  const deletePost = (id) => {
+    const response = new BehaviorSubject(false);
+    currentConfirmationModal.set({
+      visible: true,
+      title: 'Confirmer la suppression',
+      message: 'Êtes-vous sûr de vouloir supprimer ce post ?',
+      response
+    });
+    response.asObservable().pipe(
+      concatMap((bool) => forkJoin({delete: deletePostById(id), bool: of(bool)})),
+      map(({bool}) => bool ? getOwnProfil() : '')
+    ).subscribe({
+      error: () => currentSnackbar.set({ type: 'ERROR', message: 'An error occured while deleting post' })
+    });
+  }
+
   useEffect(() => {
     if (own) {
-      forkJoin({ user: getProfil(), posts: findAllPostsByUserId(auth.currentUser.uid) }).pipe(
-        map(({ user, posts }) => {
-          setUser(user);
-          setPosts(posts);
-        }),
-      ).subscribe();
-    } else if(search) {
+      getOwnProfil();
+    } else if (search) {
       forkJoin({ user: findUserById(search), posts: findAllPostsByUserId(search) }).pipe(
         map(({ user, posts }) => {
           setUser(user);
@@ -107,7 +130,7 @@ const Profil = ({ own, search }) => {
     <View style={styles.container}>
       <ScrollView ref={_scrollview}>
         <View style={styles.bio}>
-          <View style={{paddingVertical: 10}}>
+          <View style={{ paddingVertical: 10 }}>
             <Image style={styles.picture} source={user?.picture ? { uri: user?.picture } : require('../assets/pictures/default.jpg')} />
             <Text style={styles.username}>@{user?.username}</Text>
           </View>
@@ -130,25 +153,30 @@ const Profil = ({ own, search }) => {
           </View>
           {
             !own ?
-              <View style={{width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10}}>
+              <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10 }}>
                 <View style={styles.button}>
                   <Button title='Follow' color="black" />
                 </View>
                 <View style={styles.button}>
                   <Button title='Message' color="black" />
                 </View>
-              </View> : 
-              <View style={{width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10}}>
-                <View style={{...styles.button, transform: [{scale: 0.7}]}}>
+              </View> :
+              <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10 }}>
+                <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
                   <Button title='+ Post' color="black" onPress={() => currentModalVisible.set(true)} />
                 </View>
-                <View style={{...styles.button, backgroundColor: 'black'}}>
+                <View style={{ ...styles.button, backgroundColor: 'black' }}>
                   <Button title='+ Weekl' color="white" />
                 </View>
-                <View style={{...styles.button, transform: [{scale: 0.7}]}}>
-                  <Button title='Edit' color="black" />
+                <View style={{ ...styles.button, transform: [{ scale: 0.7 }] }}>
+                  {
+                    !editMode ?
+                      <Button title='Edit' color="black" onPress={() => setEditMode(true)} /> :
+                      <Button title='Finish editing' color="black" onPress={() => setEditMode(false)} />
+
+                  }
                 </View>
-                <CameraPost />
+                <CameraPost refresh={getOwnProfil} />
               </View>
           }
           {
@@ -177,6 +205,12 @@ const Profil = ({ own, search }) => {
                   }
                 }}>
                   <Post user={user} post={post} displayInfo={gridView} fadeAnim={fadeAnim} />
+                  {
+                    editMode ?
+                      <Pressable onPress={() => deletePost(post?.uid)} style={{ width: 40, aspectRatio: 1, backgroundColor: 'black', borderRadius: 90, position: 'absolute', top: -10, right: 0, zIndex: 10, justifyContent: 'center', alignItems: 'center' }}>
+                        <FontAwesomeIcon icon={faTrash} color='rgba(255,255,255,0.5)' />
+                      </Pressable> : ''
+                  }
                 </TouchableOpacity>
               </View>
             ))}
@@ -184,6 +218,7 @@ const Profil = ({ own, search }) => {
         </GestureDetector>
       </ScrollView>
       <Comments />
+      <ConfirmationModal />
     </View>
   )
 }

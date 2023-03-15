@@ -17,7 +17,7 @@ const { width, height } = Dimensions.get('screen');
 
 library.add(faArrowRotateLeft, faClose, faArrowRight);
 
-const CameraPost = ({ }) => {
+const CameraPost = ({refresh}) => {
   const [type, setType] = useState(CameraType.back);
   const [permission, setPermission] = useState(Camera.requestCameraPermissionsAsync());
   const [visible, setVisible] = useState(false);
@@ -27,6 +27,7 @@ const CameraPost = ({ }) => {
   const cameraRef = useRef();
 
   const toggleCameraType = () => {
+    console.log("oui");
     setType(type === CameraType.back ? CameraType.front : CameraType.back);
   }
 
@@ -70,7 +71,7 @@ const CameraPost = ({ }) => {
       map(() => setPosting(false)),
       map(() => setVisible(false)),
     ).subscribe({
-      next: () => console.log('success'),
+      next: () => refresh(),
       error: err => console.log(err)
     })
   }
@@ -90,17 +91,18 @@ const CameraPost = ({ }) => {
     >
       {
         posting ?
+          // Loading screen while uploading post
           <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black'}}>
             <Text style={{color: 'white'}}>Your picture is currently posting</Text>
             <ActivityIndicator color={'rgba(255,255,255,0.5)'} />
           </View> :
+
+          // Camera component interface
           <View style={{ flex: 1, backgroundColor: 'black' }}>
             {
-              !photo ?
-                <GestureDetector gesture={dblTap}>
-                  <Camera ref={cameraRef} style={{ ...styles.camera }} type={type} />
-                </GestureDetector> : ''
+              !photo ? <Camera ref={cameraRef} style={{ ...styles.camera }} type={type} /> : ''
             }
+            <GestureDetector gesture={dblTap}>
             <View style={{ position: 'absolute', height, width, alignItems: 'center' }}>
 
               {/* Top component */}
@@ -179,6 +181,7 @@ const CameraPost = ({ }) => {
                 </View>
               </View>
             </View>
+            </GestureDetector>
           </View>
       }
     </Modal>

@@ -63,7 +63,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: "absolute",
     bottom: 0,
-    borderRadius: 20,
+    borderBottomStartRadius: 20,
+    borderBottomEndRadius: 20,
   },
   left: {
     width: width / 8,
