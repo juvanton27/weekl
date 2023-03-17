@@ -1,7 +1,7 @@
 import { library } from '@fortawesome/fontawesome-svg-core';
 import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import PostInfo from "./Info";
 
@@ -16,8 +16,9 @@ library.add(solid_heart.faHeart);
  * @param {*} user the user informations
  * @returns 
  */
-const Post = ({displayInfo, post, user}) => {
+const Post = ({ displayInfo, post, user }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [numberOfLikes, setNumberOfLikes] = useState(0);
 
   const fadeIn = () => {
     Animated.timing(fadeAnim, {
@@ -44,10 +45,10 @@ const Post = ({displayInfo, post, user}) => {
       />
       <Animated.View style={{ ...styles.like, opacity: fadeAnim }}>
         <FontAwesomeIcon style={styles.heart} icon={solid_heart.faHeart} size={150} />
-        <Text style={styles.count}>5K</Text>
+        <Text style={styles.count}>{numberOfLikes}</Text>
       </Animated.View>
       <Animated.View style={{ display: displayInfo ? 'none' : 'flex', width: '90%' }}>
-        <PostInfo user={user} post={post} anim={{ fadeIn, fadeOut }} />
+        <PostInfo user={user} post={post} anim={{ fadeIn, fadeOut }} setNumberOfLikes={setNumberOfLikes} />
       </Animated.View>
     </View>
   )

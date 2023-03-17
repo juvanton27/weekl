@@ -4,8 +4,10 @@ import * as inline_heart from '@fortawesome/free-regular-svg-icons/faHeart';
 import * as solid_heart from '@fortawesome/free-solid-svg-icons/faHeart';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { concatMap, map } from 'rxjs';
+import { getNumberOfLikesByPost, isLikedByUser, likePost } from '../../services/posts.service';
 import { currentModalVisible, currentPostComments } from "./Comments";
 
 const { width, height } = Dimensions.get('window');
@@ -20,8 +22,28 @@ library.add(inline_comment.faComment, solid_heart.faHeart, inline_heart.faHeart)
  * @param {*} post the post
  * @returns 
  */
-const PostInfo = ({ user, anim, post }) => {
+const PostInfo = ({ user, anim, post, setNumberOfLikes }) => {
   const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    isLikedByUser(post.uid).subscribe(setLiked);
+  });
+
+  const onLike = () => {
+    likePost(post?.uid).pipe(
+      map(() => setLiked(!liked)),
+      concatMap(() => getNumberOfLikesByPost(post?.uid)),
+      map(setNumberOfLikes)
+    ).subscribe(
+      () => {
+        if (!liked) {
+          new Promise(resolve => resolve(anim.fadeIn()))
+            .then(setTimeout(() => anim.fadeOut(), 750))
+        }
+        isLikedByUser(post.uid).subscribe(setLiked);
+      }
+    )
+  }
 
   return (
     <LinearGradient
@@ -36,13 +58,7 @@ const PostInfo = ({ user, anim, post }) => {
         <Text style={styles.location}>Avenue de QuelquePart</Text>
       </View>
       <View style={styles.right}>
-        <Pressable onPress={() => {
-          if (!liked) {
-            new Promise(resolve => resolve(anim.fadeIn()))
-              .then(setTimeout(() => anim.fadeOut(), 750))
-          }
-          setLiked(!liked);
-        }}>
+        <Pressable onPress={() => onLike()}>
           <FontAwesomeIcon style={styles.icon} icon={liked ? solid_heart.faHeart : inline_heart.faHeart} color={liked ? 'red' : 'white'} size={30} />
         </Pressable>
         <Pressable onPress={() => { currentModalVisible.set(true); currentPostComments.set(post) }}>
@@ -92,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
-    marginRight: 10
+    marginRight: 10,
   },
   icon: {
     margin: 5,

@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { catchError, concatMap, forkJoin, from, map, of, throwError } from 'rxjs';
 import { auth, db } from '../firebase';
 import { findUserById } from './users.service';
@@ -38,11 +38,12 @@ export function uploadPicture(picture) {
     concatMap(response => forkJoin({
       firestore: from(addDoc(postsRef, {
         user_id: auth.currentUser.uid,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        likes: []
       })),
       blob: response.blob(),
     })),
-    concatMap(({firestore, blob}) => {
+    concatMap(({ firestore, blob }) => {
       const id = firestore.id;
       const token = "sp=racwdl&st=2023-03-15T09:56:44Z&se=2023-03-15T17:56:44Z&skoid=409f9001-20e5-472e-b005-f54de33acceb&sktid=0d16176d-b84e-4dbf-86ae-7d2f69a59908&skt=2023-03-15T09:56:44Z&ske=2023-03-15T17:56:44Z&sks=b&skv=2021-12-02&spr=https&sv=2021-12-02&sr=c&sig=K8Aa2p5i5vv0WE1zQeeVRU%2FNyok53ymZIlWC0GBBRE4%3D";
       const url = `https://weeklapp.blob.core.windows.net/weekl/posts/${id}.jpg`;
@@ -73,4 +74,29 @@ export function deletePostById(id) {
   })).pipe(
     concatMap(() => from(deleteDoc(doc(db, "posts", id))))
   );
+}
+
+export function isLikedByUser(postId) {
+  const userId = auth?.currentUser?.uid;
+  const postsRef = doc(db, "posts", postId);
+  return from(getDoc(postsRef)).pipe(
+    concatMap(doc => of(doc.data()?.likes.includes(userId)))
+  );
+}
+
+export function likePost(postId) {
+  const userId = auth?.currentUser?.uid;
+  const likeRef = doc(db, "posts", postId);
+  return isLikedByUser(postId).pipe(
+    concatMap(bool => from(updateDoc(likeRef, {
+      likes: bool ? arrayRemove(userId) : arrayUnion(userId),
+    })))
+  );
+}
+
+export function getNumberOfLikesByPost(postId) {
+  const likeRef = doc(db, "posts", postId);
+  return from(getDoc(likeRef)).pipe(
+    concatMap(doc => of(doc.data()?.likes.length))
+  )
 }

@@ -18,10 +18,11 @@ import { faTrash } from '@fortawesome/fontawesome-free-solid';
 import ConfirmationModal, { currentConfirmationModal } from '../utils/ConfirmationModal';
 import { faUserPlus } from '@fortawesome/fontawesome-free-solid';
 import { faUserMinus } from '@fortawesome/fontawesome-free-solid';
+import { faMessage } from '@fortawesome/free-solid-svg-icons';
 
 const { width, height } = Dimensions.get('window');
 
-library.add(inline_logout.faArrowRightFromBracket, faTrash, faUserPlus, faUserMinus);
+library.add(inline_logout.faArrowRightFromBracket, faTrash, faUserPlus, faUserMinus, faMessage);
 
 const modalVisible = new BehaviorSubject(false);
 export const currentModalVisible = {
@@ -165,18 +166,21 @@ const Profil = ({ own, search }) => {
                 <View style={styles.button}>
                   {
                     user?.followers?.includes(auth.currentUser.uid) ?
-                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: '75%' }} onPress={() => unfollowUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
-                        <FontAwesomeIcon icon={faUserMinus} />
+                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'center', width: '75%' }} onPress={() => unfollowUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
+                        <FontAwesomeIcon style={{marginRight: 10}} icon={faUserMinus} />
                         <Text>Unfollow</Text>
                       </TouchableOpacity> :
-                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: '75%' }} onPress={() => followUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
-                        <FontAwesomeIcon icon={faUserPlus} />
+                      <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'center', width: '75%' }} onPress={() => followUserById(user?.uid).pipe(concatMap(() => findUserById(user?.uid))).subscribe(setUser)}>
+                        <FontAwesomeIcon style={{marginRight: 10}} icon={faUserPlus} />
                         <Text>Follow</Text>
                       </TouchableOpacity>
                   }
                 </View>
                 <View style={styles.button}>
-                  <Button title='Message' color="black" />
+                  <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'center', width: '75%' }}>
+                    <FontAwesomeIcon style={{marginRight: 10}} icon={faMessage} />
+                    <Text>Message</Text>
+                  </TouchableOpacity>
                 </View>
               </View> :
               <View style={{ width, flexDirection: 'row', justifyContent: 'space-evenly', padding: 10, marginVertical: 20 }}>
@@ -212,7 +216,7 @@ const Profil = ({ own, search }) => {
               <Text>No posts currently</Text>
             </View> :
             <GestureDetector gesture={pinch}>
-              <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+              <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', marginBottom: 100 }}>
                 {posts?.map((post, index) => (
                   <View key={index} style={{ width: gridView ? width / 3 : width }} onLayout={e => {
                     postCords[index] = e.nativeEvent.layout.y + height / 3 - 100;
@@ -252,7 +256,6 @@ const styles = StyleSheet.create({
     height,
     width,
     paddingTop: height / 10,
-    rowGap: 20
   },
   bio: {
     flex: 1,
